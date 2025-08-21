@@ -1,0 +1,264 @@
+{
+  "countries": [
+    {
+      "id": "headquarters",
+      "name": "Headquarters",
+      "cities": []
+    },
+    {
+      "id": "australia",
+      "name": "Australia",
+      "cities": []
+    },
+    {
+      "id": "botswana",
+      "name": "Botswana",
+      "cities": [
+        {
+          "name": "Gaborone",
+          "branches": []
+        },
+        {
+          "name": "Mochudi",
+          "branches": []
+        },
+        {
+          "name": "Tate Siding",
+          "branches": []
+        },
+        {
+          "name": "Francistown",
+          "branches": []
+        },
+        {
+          "name": "Mahalapye",
+          "branches": []
+        },
+        {
+          "name": "Palapye",
+          "branches": []
+        },
+        {
+          "name": "Maun",
+          "branches": []
+        }
+      ]
+    },
+    {
+      "id": "south_africa",
+      "name": "South Africa",
+      "cities": [
+        {
+          "name": "Johannesburg",
+          "branches": [
+            {
+              "name": "Pimville",
+              "address": "Mhlwathi street, Pimville Zone 1, Johannesburg"
+            },
+            {
+              "name": "Alexandra",
+              "address": "San Kopano hall, Alexandra"
+            },
+            {
+              "name": "Kagiso",
+              "address": ""
+            },
+            {
+              "name": "Thembisa",
+              "address": ""
+            },
+            {
+              "name": "Vosloorus",
+              "address": ""
+            },
+            {
+              "name": "Diepsloot",
+              "address": ""
+            },
+            {
+              "name": "Ennerdale",
+              "address": ""
+            }
+          ]
+        },
+        {
+          "name": "Pretoria",
+          "branches": [
+            {
+              "name": "Soshanguve",
+              "address": ""
+            },
+            {
+              "name": "Mamelodi",
+              "address": ""
+            }
+          ]
+        },
+        {
+          "name": "Durban",
+          "branches": []
+        },
+        {
+          "name": "Cape Town",
+          "branches": []
+        },
+        {
+          "name": "Venda",
+          "branches": []
+        },
+        {
+          "name": "Polokwane",
+          "branches": []
+        },
+        {
+          "name": "Pietermaritzburg",
+          "branches": []
+        },
+        {
+          "name": "East London",
+          "branches": []
+        },
+        {
+          "name": "Port Elizabeth",
+          "branches": []
+        },
+        {
+          "name": "Mkhuhlu",
+          "branches": []
+        },
+        {
+          "name": "Newcastle",
+          "branches": []
+        },
+        {
+          "name": "Umhlabauyalingana",
+          "branches": []
+        }
+      ]
+    },
+    {
+      "id": "namibia",
+      "name": "Namibia",
+      "cities": []
+    },
+    {
+      "id": "mozambique",
+      "name": "Mozambique",
+      "cities": []
+    },
+    {
+      "id": "zambia",
+      "name": "Zambia",
+      "cities": [
+        {
+          "name": "Lusaka",
+          "branches": []
+        }
+      ]
+    },
+    {
+      "id": "malawi",
+      "name": "Malawi",
+      "cities": [
+        {
+          "name": "Lilongwe",
+          "branches": []
+        }
+      ]
+    },
+    {
+      "id": "zimbabwe",
+      "name": "Zimbabwe",
+      "cities": [
+        {
+          "name": "Harare",
+          "branches": []
+        },
+        {
+          "name": "Gweru",
+          "branches": []
+        },
+        {
+          "name": "Mutare",
+          "branches": []
+        },
+        {
+          "name": "Victoria Falls",
+          "branches": []
+        },
+        {
+          "name": "Kwekwe",
+          "branches": []
+        },
+        {
+          "name": "Kadoma",
+          "branches": []
+        },
+        {
+          "name": "Norton",
+          "branches": []
+        },
+        {
+          "name": "Masvingo",
+          "branches": []
+        },
+        {
+          "name": "Beitbridge",
+          "branches": []
+        },
+        {
+          "name": "Chiredzi",
+          "branches": []
+        },
+        {
+          "name": "Chikombedzi",
+          "branches": []
+        },
+        {
+          "name": "Chinhoyi",
+          "branches": []
+        },
+        {
+          "name": "Hwange",
+          "branches": []
+        },
+        {
+          "name": "Kariba",
+          "branches": []
+        },
+        {
+          "name": "Plum Tree",
+          "branches": []
+        },
+        {
+          "name": "Gwanda",
+          "branches": []
+        }
+      ]
+    },
+    {
+      "id": "united_kingdom",
+      "name": "United Kingdom",
+      "cities": [
+        {
+          "name": "England",
+          "branches": [
+            {
+              "name": "Manchester",
+              "address": ""
+            },
+            {
+              "name": "Bradford",
+              "address": ""
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "united_arab_emirates",
+      "name": "United Arab Emirates",
+      "cities": []
+    }
+  ]
+}

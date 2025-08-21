@@ -1,0 +1,79 @@
+{
+  "responses": {
+    "greetings": {
+      "hello": "Hello! Welcome to AFMA Chat. How can I help you today?",
+      "hi": "Hi there! How are you doing today?",
+      "good morning": "Good morning! May the Lord bless your day.",
+      "good afternoon": "Good afternoon! How can we assist you?",
+      "good evening": "Good evening! Peace be with you.",
+      "hey": "Hey! Welcome to our AFMA community chat."
+    },
+    "spiritual": {
+      "prayer": "I'd be happy to pray with you. What would you like prayer for?",
+      "pray": "Let us pray together. What is on your heart?",
+      "bible": "The Bible is our foundation. What passage would you like to discuss?",
+      "scripture": "Scripture is our guide. How can I help you with God's word?",
+      "faith": "Faith is the substance of things hoped for. How can we strengthen your faith today?",
+      "blessing": "May God's blessings be upon you. How can we pray for you?",
+      "worship": "Worship is the heart of our relationship with God. Join us this Sunday!",
+      "salvation": "Salvation is a gift from God through Jesus Christ. Would you like to know more?"
+    },
+    "church_services": {
+      "service": "Our next service is this Sunday at 10:00 AM. Would you like more details?",
+      "sunday": "Sunday service starts at 10:00 AM. We'd love to see you there!",
+      "bible study": "We have Bible study every Wednesday at 7:00 PM. Everyone is welcome!",
+      "youth": "Youth service is every Friday at 6:00 PM. Bring your friends!",
+      "choir": "Choir practice is Tuesday and Thursday at 6:00 PM. Join us in worship!",
+      "prayer meeting": "Prayer meeting is every Tuesday at 6:00 PM. Come and pray with us."
+    },
+    "pastoral_care": {
+      "overseer": "The Overseer is available for appointments. Would you like me to help you schedule one?",
+      "pastor": "Our pastors are always available for spiritual guidance. How can they help you?",
+      "counseling": "We offer counseling services. Would you like to speak with a pastor?",
+      "marriage": "We provide marriage counseling and guidance. How can we help your relationship?",
+      "baptism": "Baptism is an important step in your faith journey. Would you like to learn more?",
+      "communion": "Holy Communion is served every first Sunday. Join us in remembrance."
+    },
+    "general_help": {
+      "help": "I'm here to help! You can ask me about services, prayer requests, Bible study, or general church information.",
+      "information": "What information about AFMA would you like to know?",
+      "location": "We have multiple branches. Which area are you looking for?",
+      "contact": "You can contact us at info@afma.org or call our main office.",
+      "website": "Visit our website at www.afma.org for more information.",
+      "donation": "Thank you for your heart to give. Speak to any church leader about donations."
+    },
+    "special_responses": {
+      "thank you": "You're welcome! God bless you.",
+      "thanks": "It's our pleasure to serve you in Christ's love.",
+      "goodbye": "God bless you! See you in church.",
+      "bye": "Goodbye! May the Lord be with you.",
+      "amen": "Amen! Glory to God!",
+      "hallelujah": "Hallelujah! Praise the Lord!",
+      "praise god": "Yes! All praise and glory to God!"
+    }
+  },
+  "default_responses": [
+    "Thank you for your message. An AFMA representative will respond to you shortly. God bless!",
+    "I appreciate you reaching out. Let me connect you with the right person to help.",
+    "Your message is important to us. Someone from our team will get back to you soon.",
+    "Thank you for being part of the AFMA family. How else can we assist you today?",
+    "God bless you for reaching out. We're here to support you in your spiritual journey."
+  ],
+  "auto_responses": {
+    "overseer_responses": [
+      "This is the Overseer speaking. How can I guide you today?",
+      "As your Overseer, I'm here to provide spiritual leadership and guidance.",
+      "The Lord has placed me to watch over this flock. What do you need?"
+    ],
+    "mfundisi_responses": [
+      "Mfundisi Malinga here. How can I serve you in Christ's name?",
+      "Greetings in the name of Jesus! This is Mfundisi Malinga.",
+      "Peace be with you. Mfundisi Malinga at your service."
+    ],
+    "pastor_responses": [
+      "Pastor speaking. How can I help you grow in your faith?",
+      "This is your Pastor. I'm here to support you spiritually.",
+      "God's blessings upon you. Your Pastor is here to help."
+    ]
+  }
+}
