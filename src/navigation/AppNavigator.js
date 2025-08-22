@@ -14,6 +14,7 @@ import ChatInterface from '../screens/ChatInterface';
 import BranchLocatorScreen from '../screens/BranchLocatorScreen';
 import OverseerQueueScreen from '../screens/OverseerQueueScreen';
 import PastorQueueScreen from '../screens/PastorQueueScreen';
+import PDFViewerScreen from '../screens/PDFViewerScreen';
 
 const { width } = Dimensions.get('window');
 const Tab = createBottomTabNavigator();
@@ -92,6 +93,7 @@ export default function AppNavigator() {
       <Stack.Screen name="BranchLocator" component={BranchLocatorScreen} />
       <Stack.Screen name="OverseerQueue" component={OverseerQueueScreen} />
       <Stack.Screen name="PastorQueue" component={PastorQueueScreen} />
+      <Stack.Screen name="PDFViewer" component={PDFViewerScreen} />
     </Stack.Navigator>
   );
 }

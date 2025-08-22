@@ -1,0 +1,10 @@
+# Placeholder for Rev MJK Sengwayo Testimony PDF
+
+**File:** rev-mjk-sengwayo-testimony.pdf
+**Title:** Founding Overseer Testimony
+**Period:** 1955 - 1982
+**Description:** The life story and testimony of Rev MJK Sengwayo, the founding overseer of AFMA.
+
+To add the actual PDF:
+1. Place your PDF file here with the name: `rev-mjk-sengwayo-testimony.pdf`
+2. The app will automatically detect and allow downloads

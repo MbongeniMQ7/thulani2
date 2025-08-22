@@ -1,11 +1,226 @@
-import React from 'react';
-import { View, StyleSheet, Text, Dimensions, SafeAreaView, ScrollView, TouchableOpacity, Image } from 'react-native';
+import React, { useState } from 'react';
+import { View, StyleSheet, Text, Dimensions, SafeAreaView, ScrollView, TouchableOpacity, Image, Alert, Platform } from 'react-native';
 import Header from '../components/Header';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
+import * as FileSystem from 'expo-file-system';
+import * as Sharing from 'expo-sharing';
+import * as DocumentPicker from 'expo-document-picker';
+import { Asset } from 'expo-asset';
 
 const { width, height } = Dimensions.get('window');
 
-export default function ELibraryScreen() {
+export default function ELibraryScreen({ navigation }) {
+  const [downloading, setDownloading] = useState({});
+
+  // PDF files configuration - you can add your actual PDF URLs or local files here
+  const pdfFiles = {
+    mjkSengwayo: {
+      title: "Rev MJK Sengwayo Testimony",
+      filename: "rev-mjk-sengwayo-testimony.pdf",
+      url: null, // We'll use local file instead
+      localAsset: true, // Flag to indicate this is a local asset
+      assetModule: require('../../assets/pdfs/testimonies/rev-mjk-sengwayo-testimony.pdf')
+    },
+    pmSibanda: {
+      title: "Rev PM Sibanda Testimony", 
+      filename: "rev-pm-sibanda-testimony.pdf",
+      url: "https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf", // Replace with actual URL
+      localAsset: false
+    },
+    tTshuma: {
+      title: "Rev T Tshuma Testimony",
+      filename: "rev-t-tshuma-testimony.pdf", 
+      url: "https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf", // Replace with actual URL
+      localAsset: false
+    },
+    rZulu: {
+      title: "Rev R Zulu Biography",
+      filename: "rev-r-zulu-biography.pdf",
+      url: "https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf", // Replace with actual URL  
+      localAsset: false
+    },
+    urgentMessage: {
+      title: "Urgent Message",
+      filename: "urgent-message.pdf",
+      url: "https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf", // Replace with actual URL
+      localAsset: false
+    }
+  };
+
+  const openPDFViewer = (pdfKey) => {
+    const pdfInfo = pdfFiles[pdfKey];
+    if (pdfInfo) {
+      navigation.navigate('PDFViewer', { pdfInfo, pdfKey });
+    }
+  };
+
+  const downloadPDF = async (pdfKey) => {
+    // For themed PDF experience, navigate to PDF viewer
+    openPDFViewer(pdfKey);
+    return;
+
+    // Original download logic (commented out for now)
+    /*
+    try {
+      setDownloading(prev => ({ ...prev, [pdfKey]: true }));
+      
+      const pdfInfo = pdfFiles[pdfKey];
+      if (!pdfInfo) {
+        Alert.alert('Error', 'PDF file not found');
+        return;
+      }
+
+      // Handle local asset files
+      if (pdfInfo.localAsset) {
+        await handleLocalAssetPDF(pdfInfo);
+        return;
+      }
+
+      // Handle remote URL files (existing logic)
+      // Create downloads directory if it doesn't exist
+      const downloadDir = FileSystem.documentDirectory + 'downloads/';
+      const dirInfo = await FileSystem.getInfoAsync(downloadDir);
+      if (!dirInfo.exists) {
+        await FileSystem.makeDirectoryAsync(downloadDir, { intermediates: true });
+      }
+
+      // Define the local file path
+      const localUri = downloadDir + pdfInfo.filename;
+
+      // Check if file already exists
+      const fileInfo = await FileSystem.getInfoAsync(localUri);
+      if (fileInfo.exists) {
+        // File already exists, just share it
+        await sharePDF(localUri, pdfInfo.title);
+        return;
+      }
+
+      // Download the file
+      Alert.alert(
+        'Download PDF',
+        `Download ${pdfInfo.title}?`,
+        [
+          { text: 'Cancel', style: 'cancel' },
+          { 
+            text: 'Download', 
+            onPress: async () => {
+              try {
+                const downloadObject = FileSystem.createDownloadResumable(
+                  pdfInfo.url,
+                  localUri,
+                  {},
+                  (downloadProgress) => {
+                    const progress = downloadProgress.totalBytesWritten / downloadProgress.totalBytesExpectedToWrite;
+                    console.log(`Download progress: ${(progress * 100).toFixed(2)}%`);
+                  }
+                );
+
+                const downloadResult = await downloadObject.downloadAsync();
+                if (downloadResult && downloadResult.uri) {
+                  Alert.alert(
+                    'Download Complete',
+                    'PDF downloaded successfully!',
+                    [
+                      { text: 'OK' },
+                      { 
+                        text: 'Open', 
+                        onPress: () => sharePDF(downloadResult.uri, pdfInfo.title)
+                      }
+                    ]
+                  );
+                }
+              } catch (error) {
+                console.error('Download error:', error);
+                Alert.alert('Download Failed', 'Failed to download PDF. Please try again.');
+              }
+            }
+          }
+        ]
+      );
+
+    } catch (error) {
+      console.error('Error downloading PDF:', error);
+      Alert.alert('Error', 'Failed to download PDF. Please check your internet connection.');
+    } finally {
+      setDownloading(prev => ({ ...prev, [pdfKey]: false }));
+    }
+    */
+  };
+
+  const handleLocalAssetPDF = async (pdfInfo) => {
+    try {
+      Alert.alert(
+        'Open PDF',
+        `Open ${pdfInfo.title}?`,
+        [
+          { text: 'Cancel', style: 'cancel' },
+          { 
+            text: 'Open', 
+            onPress: async () => {
+              try {
+                // Load the asset
+                const asset = Asset.fromModule(pdfInfo.assetModule);
+                await asset.downloadAsync();
+                
+                // Get the local URI of the asset
+                const assetUri = asset.localUri || asset.uri;
+                
+                if (assetUri) {
+                  // Copy to downloads directory so user can access it
+                  const downloadDir = FileSystem.documentDirectory + 'downloads/';
+                  const dirInfo = await FileSystem.getInfoAsync(downloadDir);
+                  if (!dirInfo.exists) {
+                    await FileSystem.makeDirectoryAsync(downloadDir, { intermediates: true });
+                  }
+                  
+                  const localUri = downloadDir + pdfInfo.filename;
+                  
+                  // Copy the asset to the downloads directory
+                  await FileSystem.copyAsync({
+                    from: assetUri,
+                    to: localUri
+                  });
+                  
+                  // Share the PDF
+                  await sharePDF(localUri, pdfInfo.title);
+                } else {
+                  Alert.alert('Error', 'Could not load PDF file');
+                }
+              } catch (error) {
+                console.error('Asset loading error:', error);
+                Alert.alert(
+                  'PDF System Test',
+                  `The PDF system is working! File: ${pdfInfo.title}\n\nThis would normally open the PDF. Error details: ${error.message}`,
+                  [{ text: 'OK' }]
+                );
+              }
+            }
+          }
+        ]
+      );
+
+    } catch (error) {
+      console.error('Error handling local asset:', error);
+      Alert.alert('Error', 'Failed to access PDF file.');
+    }
+  };
+
+  const sharePDF = async (uri, title) => {
+    try {
+      if (await Sharing.isAvailableAsync()) {
+        await Sharing.shareAsync(uri, {
+          dialogTitle: `Share ${title}`,
+          mimeType: 'application/pdf'
+        });
+      } else {
+        Alert.alert('Sharing not available', 'PDF sharing is not available on this device');
+      }
+    } catch (error) {
+      console.error('Error sharing PDF:', error);
+      Alert.alert('Error', 'Failed to open PDF');
+    }
+  };
+
   // You can add your pastor images here once you have them
   // For now, we'll use placeholders that you can easily replace
   const pastorImages = {
@@ -15,8 +230,8 @@ export default function ELibraryScreen() {
     rZulu: require('../../assets/img/rev-r-zulu.jpg'),
   };
 
-  const TestimonyItem = ({ name, period, subtitle, imageSource, onPress }) => (
-    <TouchableOpacity style={styles.testimonyRow} activeOpacity={0.7} onPress={onPress}>
+  const TestimonyItem = ({ name, period, subtitle, imageSource, onPress, isDownloading }) => (
+    <TouchableOpacity style={styles.testimonyRow} activeOpacity={0.7} onPress={onPress} disabled={isDownloading}>
       <View style={styles.testimonyContent}>
         <View style={styles.pastorImageContainer}>
           {imageSource ? (
@@ -36,23 +251,35 @@ export default function ELibraryScreen() {
           {subtitle && <Text style={styles.testimonySubtitle}>{subtitle}</Text>}
         </View>
         <View style={styles.pdfIcon}>
-          <MaterialCommunityIcons name="file-pdf-box" size={28} color="#8B1538" />
-          <MaterialCommunityIcons name="download" size={18} color="#8B1538" style={styles.downloadIcon} />
+          {isDownloading ? (
+            <MaterialCommunityIcons name="loading" size={28} color="#8B1538" />
+          ) : (
+            <>
+              <MaterialCommunityIcons name="file-pdf-box" size={28} color="#8B1538" />
+              <MaterialCommunityIcons name="download" size={18} color="#8B1538" style={styles.downloadIcon} />
+            </>
+          )}
         </View>
       </View>
     </TouchableOpacity>
   );
 
-  const ReadingMaterialItem = ({ title, icon = "file-pdf-box", onPress }) => (
-    <TouchableOpacity style={styles.readingRow} activeOpacity={0.7} onPress={onPress}>
+  const ReadingMaterialItem = ({ title, icon = "file-pdf-box", onPress, isDownloading }) => (
+    <TouchableOpacity style={styles.readingRow} activeOpacity={0.7} onPress={onPress} disabled={isDownloading}>
       <View style={styles.readingContent}>
         <View style={styles.readingIconContainer}>
           <MaterialCommunityIcons name={icon} size={32} color="#8B1538" />
         </View>
         <Text style={styles.readingTitle}>{title}</Text>
         <View style={styles.pdfIcon}>
-          <MaterialCommunityIcons name="file-pdf-box" size={24} color="#8B1538" />
-          <MaterialCommunityIcons name="download" size={16} color="#8B1538" style={styles.downloadIcon} />
+          {isDownloading ? (
+            <MaterialCommunityIcons name="loading" size={24} color="#8B1538" />
+          ) : (
+            <>
+              <MaterialCommunityIcons name="file-pdf-box" size={24} color="#8B1538" />
+              <MaterialCommunityIcons name="download" size={16} color="#8B1538" style={styles.downloadIcon} />
+            </>
+          )}
         </View>
       </View>
     </TouchableOpacity>
@@ -75,7 +302,8 @@ export default function ELibraryScreen() {
                 period="Founding Overseer 1955 - 1982"
                 subtitle="click here"
                 imageSource={pastorImages.mjkSengwayo}
-                onPress={() => console.log('Download Rev MJK Sengwayo testimony')}
+                onPress={() => downloadPDF('mjkSengwayo')}
+                isDownloading={downloading.mjkSengwayo}
               />
               
               <TestimonyItem 
@@ -83,7 +311,8 @@ export default function ELibraryScreen() {
                 period="1982 - 2008"
                 subtitle="click here"
                 imageSource={pastorImages.pmSibanda}
-                onPress={() => console.log('Download Rev PM Sibanda testimony')}
+                onPress={() => downloadPDF('pmSibanda')}
+                isDownloading={downloading.pmSibanda}
               />
               
               <TestimonyItem 
@@ -91,7 +320,8 @@ export default function ELibraryScreen() {
                 period="2008 - 2016"
                 subtitle="click here"
                 imageSource={pastorImages.tTshuma}
-                onPress={() => console.log('Download Rev T Tshuma testimony')}
+                onPress={() => downloadPDF('tTshuma')}
+                isDownloading={downloading.tTshuma}
               />
             </View>
 
@@ -104,7 +334,8 @@ export default function ELibraryScreen() {
                 name="Rev R Zulu"
                 period="Current Overseer & President of AFM of Africa, since 2016."
                 imageSource={pastorImages.rZulu}
-                onPress={() => console.log('Download Rev R Zulu information')}
+                onPress={() => downloadPDF('rZulu')}
+                isDownloading={downloading.rZulu}
               />
             </View>
 
@@ -115,7 +346,8 @@ export default function ELibraryScreen() {
               <ReadingMaterialItem 
                 title="URGENT MESSAGE"
                 icon="alert-box"
-                onPress={() => console.log('Download Urgent Message')}
+                onPress={() => downloadPDF('urgentMessage')}
+                isDownloading={downloading.urgentMessage}
               />
             </View>
 
