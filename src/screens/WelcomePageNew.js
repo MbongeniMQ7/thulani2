@@ -133,7 +133,7 @@ export default function WelcomeScreen({ navigation }) {
             <View style={styles.buttonSection}>
               <TouchableOpacity 
                 style={styles.getStartedButton}
-                onPress={() => navigation.navigate('Login')}
+                onPress={() => navigation.navigate('App')}
               >
                 <LinearGradient
                   colors={['#fff', '#f8f9fa']}
@@ -146,9 +146,9 @@ export default function WelcomeScreen({ navigation }) {
               
               <TouchableOpacity 
                 style={styles.skipButton}
-                onPress={() => navigation.navigate('Login')}
+                onPress={() => navigation.navigate('App')}
               >
-                <Text style={styles.skipText}>Already have an account? Sign In</Text>
+                <Text style={styles.skipText}>Explore the App</Text>
               </TouchableOpacity>
             </View>
           </Animated.View>
@@ -173,12 +173,15 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     justifyContent: 'space-between',
-    paddingHorizontal: width * 0.05,
-    paddingVertical: height * 0.03,
+    paddingHorizontal: width * 0.06,
+    paddingTop: height * 0.02,
+    paddingBottom: height * 0.03,
   },
   logoSection: {
     alignItems: 'center',
-    marginTop: height * 0.02,
+    marginTop: height * 0.01,
+    flex: 0.25,
+    justifyContent: 'center',
   },
   logoContainer: {
     alignItems: 'center',
@@ -215,15 +218,20 @@ const styles = StyleSheet.create({
   },
   contentSection: {
     alignItems: 'center',
-    flex: 1,
+    flex: 0.4,
     justifyContent: 'center',
-    paddingVertical: height * 0.02,
+    paddingHorizontal: width * 0.04,
   },
   iconContainer: {
-    backgroundColor: 'rgba(255, 255, 255, 0.2)',
-    borderRadius: Math.min(width * 0.08, 40),
-    padding: Math.min(width * 0.04, 16),
-    marginBottom: height * 0.02,
+    backgroundColor: 'rgba(255, 255, 255, 0.15)',
+    borderRadius: 50,
+    padding: width * 0.05,
+    marginBottom: height * 0.025,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 8,
+    elevation: 8,
   },
   slideTitle: {
     fontSize: Math.min(width * 0.07, 28),
@@ -255,53 +263,66 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'center',
     alignItems: 'center',
-    marginBottom: height * 0.02,
+    flex: 0.15,
+    paddingTop: height * 0.02,
   },
   indicator: {
-    width: 8,
-    height: 8,
-    borderRadius: 4,
+    width: 10,
+    height: 10,
+    borderRadius: 5,
     backgroundColor: 'rgba(255, 255, 255, 0.4)',
-    marginHorizontal: 4,
+    marginHorizontal: 6,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.2,
+    shadowRadius: 4,
+    elevation: 3,
   },
   activeIndicator: {
     backgroundColor: '#fff',
-    width: 20,
+    width: 24,
+    shadowOpacity: 0.4,
   },
   buttonSection: {
     alignItems: 'center',
+    flex: 0.2,
+    justifyContent: 'flex-end',
+    paddingBottom: height * 0.02,
   },
   getStartedButton: {
-    width: width * 0.8,
-    borderRadius: 25,
+    width: width * 0.85,
+    borderRadius: 30,
     marginBottom: height * 0.02,
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.3,
-    shadowRadius: 8,
-    elevation: 8,
+    shadowOffset: { width: 0, height: 6 },
+    shadowOpacity: 0.4,
+    shadowRadius: 12,
+    elevation: 10,
   },
   buttonGradient: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    paddingVertical: height * 0.02,
-    borderRadius: 25,
+    paddingVertical: height * 0.022,
+    borderRadius: 30,
   },
   buttonText: {
-    fontSize: Math.min(width * 0.045, 18),
-    fontWeight: '700',
+    fontSize: Math.min(width * 0.048, 19),
+    fontWeight: '800',
     color: '#8B1538',
-    marginRight: 8,
+    marginRight: 10,
+    letterSpacing: 0.5,
   },
   skipButton: {
     paddingVertical: height * 0.015,
+    paddingHorizontal: width * 0.05,
   },
   skipText: {
-    fontSize: Math.min(width * 0.035, 14),
+    fontSize: Math.min(width * 0.038, 15),
     color: '#fff',
     textAlign: 'center',
-    opacity: 0.8,
+    opacity: 0.9,
     textDecorationLine: 'underline',
+    fontWeight: '600',
   },
 });

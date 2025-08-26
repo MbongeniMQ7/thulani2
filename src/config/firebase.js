@@ -18,10 +18,6 @@ if (!firebase.apps.length) {
   firebase.initializeApp(firebaseConfig);
 }
 
-// Export compat auth instance
+
 export const auth = firebase.auth();
 
-// Helper to migrate later to modular (reference):
-//   import { initializeApp } from 'firebase/app';
-//   import { getAuth } from 'firebase/auth';
-//   const app = initializeApp(firebaseConfig); const auth = getAuth(app);

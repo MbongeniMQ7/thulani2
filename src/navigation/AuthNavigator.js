@@ -13,33 +13,14 @@ import AppNavigator from './AppNavigator';
 const Stack = createStackNavigator();
 
 export default function AuthNavigator() {
-  const [user, setUser] = useState(null);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, (user) => {
-      setUser(user);
-      setLoading(false);
-    });
-
-    return unsubscribe;
-  }, []);
-
-  if (loading) return null;
-
   return (
     <NavigationContainer>
-      <Stack.Navigator screenOptions={{ headerShown: false }}>
-        {user ? (
-          <Stack.Screen name="App" component={AppNavigator} />
-        ) : (
-          <>
-            <Stack.Screen name="Welcome" component={WelcomeScreen} />
-            <Stack.Screen name="Login" component={LoginScreen} />
-            <Stack.Screen name="SignUp" component={SignUpScreen} />
-            <Stack.Screen name="ForgotPassword" component={ForgotPassword} />
-          </>
-        )}
+      <Stack.Navigator screenOptions={{ headerShown: false }} initialRouteName="Welcome">
+        <Stack.Screen name="Welcome" component={WelcomeScreen} />
+        <Stack.Screen name="App" component={AppNavigator} />
+        <Stack.Screen name="Login" component={LoginScreen} />
+        <Stack.Screen name="SignUp" component={SignUpScreen} />
+        <Stack.Screen name="ForgotPassword" component={ForgotPassword} />
       </Stack.Navigator>
     </NavigationContainer>
   );

@@ -7,19 +7,23 @@ import { auth } from '../config/firebase';
 
 const { width, height } = Dimensions.get('window');
 
-export default function ChatScreen({ navigation }) {
+const regions = ["Central", "North", "South", "East", "West"];
+
+export default function ChoirScreen({ navigation }) {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [fullName, setFullName] = useState('');
+  const [selectedRegion, setSelectedRegion] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [isRegistering, setIsRegistering] = useState(false);
+  const [showRegionDropdown, setShowRegionDropdown] = useState(false);
 
   const handleSignIn = async () => {
-    if (!email.trim() || !password.trim()) {
-      Alert.alert('Error', 'Please enter both email and password');
+    if (!email.trim() || !password.trim() || !selectedRegion) {
+      Alert.alert('Error', 'Please fill in all fields including region selection');
       return;
     }
 
@@ -30,16 +34,18 @@ export default function ChatScreen({ navigation }) {
       const user = userCredential.user;
       
       Alert.alert(
-        'Welcome to AFMA Chat!',
-        `Hello ${user.displayName || user.email}! You have successfully signed in.`,
+        'Welcome to AFMA Choir!',
+        `Hello ${user.displayName || user.email}! You have successfully signed in to the ${selectedRegion} region choir forum.`,
         [
           {
             text: 'Continue',
             onPress: () => {
-              navigation.navigate('ChatInterface', { 
-                userEmail: user.email,
-                userName: user.displayName || user.email,
-                userId: user.uid 
+              // Navigate to choir interface (you can create this later)
+              console.log('Navigate to Choir Interface', { 
+                userEmail: user.email, 
+                userName: user.displayName || user.email, 
+                userId: user.uid,
+                region: selectedRegion 
               });
             }
           }
@@ -72,8 +78,8 @@ export default function ChatScreen({ navigation }) {
   };
 
   const handleRegister = async () => {
-    if (!email.trim() || !password.trim() || !confirmPassword.trim() || !fullName.trim()) {
-      Alert.alert('Error', 'Please fill in all fields');
+    if (!email.trim() || !password.trim() || !confirmPassword.trim() || !fullName.trim() || !selectedRegion) {
+      Alert.alert('Error', 'Please fill in all fields including region selection');
       return;
     }
 
@@ -100,15 +106,17 @@ export default function ChatScreen({ navigation }) {
       
       Alert.alert(
         'Registration Successful!',
-        `Welcome to AFMA Chat, ${fullName}! Your account has been created successfully.`,
+        `Welcome to AFMA Choir, ${fullName}! Your account has been created for the ${selectedRegion} region.`,
         [
           {
             text: 'Continue',
             onPress: () => {
-              navigation.navigate('ChatInterface', { 
-                userEmail: user.email,
-                userName: fullName,
-                userId: user.uid 
+              // Navigate to choir interface
+              console.log('Navigate to Choir Interface', { 
+                userEmail: user.email, 
+                userName: fullName, 
+                userId: user.uid,
+                region: selectedRegion 
               });
             }
           }
@@ -154,7 +162,7 @@ export default function ChatScreen({ navigation }) {
   return (
     <SafeAreaView style={styles.safeArea}>
       <View style={styles.container}>
-        <Header title="AFMA Chat" subtitle="Community Conversations • Church Fellowship" />
+        <Header title="AFMA Choir" subtitle="Choristers Forum • Regional Access" />
         
         <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
           {/* Header Section */}
@@ -162,12 +170,12 @@ export default function ChatScreen({ navigation }) {
             colors={['#8B1538', '#A61B46', '#C02454']}
             style={styles.headerCard}
           >
-            <MaterialCommunityIcons name="chat" size={48} color="#fff" />
-            <Text style={styles.headerTitle}>AFMA Chat Community</Text>
-            <Text style={styles.headerSubtitle}>Connect with fellow believers and church members</Text>
+            <MaterialCommunityIcons name="music" size={48} color="#fff" />
+            <Text style={styles.headerTitle}>Choristers Forum</Text>
+            <Text style={styles.headerSubtitle}>Connect with choir members across all regions</Text>
           </LinearGradient>
 
-          {/* Auth Form */}
+          {/* Login Form */}
           <View style={styles.formContainer}>
             <View style={styles.tabContainer}>
               <TouchableOpacity 
@@ -199,7 +207,44 @@ export default function ChatScreen({ navigation }) {
                 </View>
               </View>
             )}
+            
+            {/* Region Selection */}
+            <View style={styles.inputSection}>
+              <Text style={styles.inputLabel}>Select Your Region</Text>
+              <TouchableOpacity 
+                style={styles.regionSelector}
+                onPress={() => setShowRegionDropdown(!showRegionDropdown)}
+              >
+                <MaterialCommunityIcons name="map-marker" size={20} color="#8B1538" style={styles.inputIcon} />
+                <Text style={[styles.regionText, !selectedRegion && styles.placeholderText]}>
+                  {selectedRegion || 'Choose Region'}
+                </Text>
+                <MaterialCommunityIcons 
+                  name={showRegionDropdown ? "chevron-up" : "chevron-down"} 
+                  size={20} 
+                  color="#8B1538" 
+                />
+              </TouchableOpacity>
+              
+              {showRegionDropdown && (
+                <View style={styles.regionDropdown}>
+                  {regions.map((region) => (
+                    <TouchableOpacity
+                      key={region}
+                      style={styles.regionOption}
+                      onPress={() => {
+                        setSelectedRegion(region);
+                        setShowRegionDropdown(false);
+                      }}
+                    >
+                      <Text style={styles.regionOptionText}>{region}</Text>
+                    </TouchableOpacity>
+                  ))}
+                </View>
+              )}
+            </View>
 
+            {/* Email Input */}
             <View style={styles.inputSection}>
               <Text style={styles.inputLabel}>Email Address</Text>
               <View style={styles.inputContainer}>
@@ -216,6 +261,7 @@ export default function ChatScreen({ navigation }) {
               </View>
             </View>
 
+            {/* Password Input */}
             <View style={styles.inputSection}>
               <Text style={styles.inputLabel}>Password</Text>
               <View style={styles.inputContainer}>
@@ -268,27 +314,28 @@ export default function ChatScreen({ navigation }) {
               </TouchableOpacity>
             )}
 
+            {/* Sign In Button */}
             <TouchableOpacity 
-              style={[styles.actionButton, isLoading && styles.actionButtonDisabled]} 
+              style={[styles.signInButton, isLoading && styles.signInButtonDisabled]} 
               onPress={isRegistering ? handleRegister : handleSignIn}
               disabled={isLoading}
             >
               <LinearGradient
                 colors={isLoading ? ['#A5D6A7', '#C8E6C9'] : ['#4CAF50', '#66BB6A']}
-                style={styles.actionGradient}
+                style={styles.signInGradient}
               >
                 {isLoading ? (
                   <>
                     <MaterialCommunityIcons name="loading" size={20} color="#fff" />
-                    <Text style={styles.actionButtonText}>
+                    <Text style={styles.signInButtonText}>
                       {isRegistering ? 'CREATING ACCOUNT...' : 'SIGNING IN...'}
                     </Text>
                   </>
                 ) : (
                   <>
-                    <MaterialCommunityIcons name={isRegistering ? "account-plus" : "chat"} size={20} color="#fff" />
-                    <Text style={styles.actionButtonText}>
-                      {isRegistering ? 'CREATE ACCOUNT' : 'SIGN IN TO CHAT'}
+                    <MaterialCommunityIcons name={isRegistering ? "account-plus" : "music-note"} size={20} color="#fff" />
+                    <Text style={styles.signInButtonText}>
+                      {isRegistering ? 'CREATE ACCOUNT' : 'SIGN IN TO CHOIR'}
                     </Text>
                   </>
                 )}
@@ -298,26 +345,26 @@ export default function ChatScreen({ navigation }) {
 
           {/* Features Section */}
           <View style={styles.featuresContainer}>
-            <Text style={styles.featuresTitle}>Chat Features</Text>
+            <Text style={styles.featuresTitle}>Choir Forum Features</Text>
             
             <View style={styles.featureItem}>
               <MaterialCommunityIcons name="forum" size={24} color="#8B1538" />
-              <Text style={styles.featureText}>Community discussions</Text>
+              <Text style={styles.featureText}>Regional choir discussions</Text>
+            </View>
+            
+            <View style={styles.featureItem}>
+              <MaterialCommunityIcons name="calendar" size={24} color="#8B1538" />
+              <Text style={styles.featureText}>Practice schedules & events</Text>
+            </View>
+            
+            <View style={styles.featureItem}>
+              <MaterialCommunityIcons name="music-box" size={24} color="#8B1538" />
+              <Text style={styles.featureText}>Sheet music sharing</Text>
             </View>
             
             <View style={styles.featureItem}>
               <MaterialCommunityIcons name="account-group" size={24} color="#8B1538" />
-              <Text style={styles.featureText}>Connect with church members</Text>
-            </View>
-            
-            <View style={styles.featureItem}>
-              <MaterialCommunityIcons name="bell" size={24} color="#8B1538" />
-              <Text style={styles.featureText}>Real-time notifications</Text>
-            </View>
-            
-            <View style={styles.featureItem}>
-              <MaterialCommunityIcons name="shield-check" size={24} color="#8B1538" />
-              <Text style={styles.featureText}>Secure & private conversations</Text>
+              <Text style={styles.featureText}>Connect with other choristers</Text>
             </View>
           </View>
         </ScrollView>
@@ -398,6 +445,13 @@ const styles = StyleSheet.create({
   activeTabText: {
     color: '#fff',
   },
+  formTitle: {
+    fontSize: Math.min(width * 0.05, 20),
+    fontWeight: '700',
+    color: '#8B1538',
+    marginBottom: height * 0.025,
+    textAlign: 'center',
+  },
   inputSection: {
     marginBottom: height * 0.02,
   },
@@ -406,6 +460,47 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     color: '#8B1538',
     marginBottom: height * 0.01,
+  },
+  regionSelector: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#f8f9fa',
+    borderRadius: 12,
+    paddingHorizontal: width * 0.04,
+    paddingVertical: height * 0.018,
+    borderWidth: 1,
+    borderColor: '#e9ecef',
+  },
+  regionText: {
+    flex: 1,
+    fontSize: Math.min(width * 0.04, 16),
+    color: '#333',
+    marginLeft: width * 0.02,
+  },
+  placeholderText: {
+    color: '#999',
+  },
+  regionDropdown: {
+    backgroundColor: '#fff',
+    borderRadius: 8,
+    marginTop: height * 0.01,
+    borderWidth: 1,
+    borderColor: '#e9ecef',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 3,
+  },
+  regionOption: {
+    paddingHorizontal: width * 0.04,
+    paddingVertical: height * 0.015,
+    borderBottomWidth: 1,
+    borderBottomColor: '#f0f0f0',
+  },
+  regionOptionText: {
+    fontSize: Math.min(width * 0.04, 16),
+    color: '#333',
   },
   inputContainer: {
     flexDirection: 'row',
@@ -434,7 +529,16 @@ const styles = StyleSheet.create({
     color: '#8B1538',
     fontWeight: '600',
   },
-  actionButton: {
+  forgotButton: {
+    alignSelf: 'flex-end',
+    marginBottom: height * 0.02,
+  },
+  forgotText: {
+    fontSize: Math.min(width * 0.035, 14),
+    color: '#8B1538',
+    fontWeight: '600',
+  },
+  signInButton: {
     borderRadius: 15,
     shadowColor: '#4CAF50',
     shadowOffset: { width: 0, height: 4 },
@@ -442,29 +546,43 @@ const styles = StyleSheet.create({
     shadowRadius: 8,
     elevation: 8,
   },
-  actionGradient: {
+  signInGradient: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
     paddingVertical: height * 0.02,
     borderRadius: 15,
   },
-  actionButtonText: {
+  signInButtonText: {
     color: '#fff',
     fontSize: Math.min(width * 0.04, 16),
     fontWeight: '700',
     marginLeft: 8,
+  },
+  demoContainer: {
+    backgroundColor: 'rgba(139, 21, 56, 0.1)',
+    borderRadius: 12,
+    padding: width * 0.04,
+    marginBottom: height * 0.03,
+    borderLeftWidth: 4,
+    borderLeftColor: '#8B1538',
+  },
+  demoTitle: {
+    fontSize: Math.min(width * 0.04, 16),
+    fontWeight: '700',
+    color: '#8B1538',
+    marginBottom: height * 0.01,
+  },
+  demoText: {
+    fontSize: Math.min(width * 0.035, 14),
+    color: '#8B1538',
+    marginBottom: height * 0.005,
   },
   featuresContainer: {
     backgroundColor: '#fff',
     borderRadius: 15,
     padding: width * 0.05,
     marginBottom: height * 0.03,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 3,
   },
   featuresTitle: {
     fontSize: Math.min(width * 0.045, 18),

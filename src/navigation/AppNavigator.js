@@ -8,6 +8,7 @@ import HomeScreen from '../screens/HomeScreen';
 import EventsScreen from '../screens/EventsScreen';
 import ELibraryScreen from '../screens/ELibraryScreen';
 import ChatScreen from '../screens/ChatScreen';
+import ChoirScreen from '../screens/ChoirScreen';
 import QueueScreen from '../screens/QueueScreen';
 import MediaCentreScreen from '../screens/MediaCentreScreen';
 import ChatInterface from '../screens/ChatInterface';
@@ -74,6 +75,11 @@ function TabNavigator() {
         name="Chat"
         component={ChatScreen}
         options={{ tabBarIcon: getTabBarIcon("chat-processing") }}
+      />
+      <Tab.Screen
+        name="Choir"
+        component={ChoirScreen}
+        options={{ tabBarIcon: getTabBarIcon("music") }}
       />
       <Tab.Screen
         name="Queue"
