@@ -1,17 +1,26 @@
 // Firebase configuration & initialization (compat version) to avoid 'Component auth has not been registered yet' errors on RN/Hermes.
 // Using compat ensures the underlying components self-register before first use.
+import {
+  FIREBASE_API_KEY,
+  FIREBASE_AUTH_DOMAIN,
+  FIREBASE_PROJECT_ID,
+  FIREBASE_STORAGE_BUCKET,
+  FIREBASE_MESSAGING_SENDER_ID,
+  FIREBASE_APP_ID,
+  FIREBASE_MEASUREMENT_ID
+} from '@env';
 
 import firebase from 'firebase/compat/app';
 import 'firebase/compat/auth';
 
 const firebaseConfig = {
-  apiKey: 'AIzaSyBNdG6mk-LFZdJ203tOUTlIewC1gV_7EgU',
-  authDomain: 'mmq-church-app.firebaseapp.com',
-  projectId: 'mmq-church-app',
-  storageBucket: 'mmq-church-app.firebasestorage.app',
-  messagingSenderId: '384286151613',
-  appId: '1:384286151613:web:b0ca78b67b861e16a778d4',
-  measurementId: 'G-CV5NH2424Z',
+  apiKey: FIREBASE_API_KEY,
+  authDomain: FIREBASE_AUTH_DOMAIN,
+  projectId: FIREBASE_PROJECT_ID,
+  storageBucket: FIREBASE_STORAGE_BUCKET,
+  messagingSenderId: FIREBASE_MESSAGING_SENDER_ID,
+  appId: FIREBASE_APP_ID,
+  measurementId: FIREBASE_MEASUREMENT_ID,
 };
 
 if (!firebase.apps.length) {
@@ -19,5 +28,7 @@ if (!firebase.apps.length) {
 }
 
 
+console.log('API Key:', FIREBASE_API_KEY);
+// Export compat auth instance
 export const auth = firebase.auth();
 

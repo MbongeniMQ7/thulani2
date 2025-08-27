@@ -35,3 +35,9 @@ yarn-error.*
 
 # typescript
 *.tsbuildinfo
+
+# lock files
+yarn.lock
+
+# environment variables
+.env
