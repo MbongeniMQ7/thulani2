@@ -15,6 +15,7 @@ import {
 } from 'react-native';
 import Header from '../components/Header';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
+import branchLocations from '../data/branchLocations.json';
 
 const { width } = Dimensions.get('window');
 
@@ -80,42 +81,30 @@ export default function BranchLocatorScreen({ navigation }) {
   const [showCountryPicker, setShowCountryPicker] = useState(false);
   const [showCityPicker, setShowCityPicker] = useState(false);
 
-  // Fetch live JSON from a remote source
   useEffect(() => {
-    let isMounted = true;
+  let isMounted = true;
 
-    const fetchData = async () => {
-      try {
-        // Replace with your hosted JSON or API endpoint
-        const response = await fetch('https://your-domain.com/branchLocations.json', {
-          headers: { Accept: 'application/json' },
-        });
-
-        if (!response.ok) {
-          throw new Error(`HTTP ${response.status}`);
-        }
-
-        const data = await response.json();
-        if (isMounted) {
-          setBranchData(data);
-        }
-      } catch (error) {
-        if (isMounted) {
-          setFetchError(String(error?.message || 'Unknown error'));
-          // Fallback to local sample so UI is usable
-          setBranchData(sampleData);
-        }
-      } finally {
-        if (isMounted) setLoading(false);
+  const fetchData = () => {
+    try {
+      const data = branchLocations; // Simulated fetch
+      if (isMounted)
+      setBranchData(data);
+    } catch (error) {
+      if (isMounted) {
+        setFetchError(String(error?.message || 'Unknown error'));
+        setBranchData(sampleData); // Fallback
       }
-    };
+    } finally {
+      if (isMounted) setLoading(false);
+    }
+  };
 
-    fetchData();
-    return () => {
-      isMounted = false;
-    };
-  }, []);
+  fetchData();
 
+  return () => {
+    isMounted = false;
+  };
+}, []);
   const countries = branchData?.countries || [];
 
   const filteredCities = useMemo(() => {

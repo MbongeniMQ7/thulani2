@@ -28,7 +28,6 @@ if (!firebase.apps.length) {
 }
 
 
-console.log('API Key:', FIREBASE_API_KEY);
 // Export compat auth instance
 export const auth = firebase.auth();
 
