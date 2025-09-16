@@ -3,7 +3,8 @@ import { View, StyleSheet, Text, Dimensions, SafeAreaView, ScrollView, TextInput
 import Header from '../components/Header';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
-import { auth } from '../config/firebase';
+import { auth, database } from '../config/firebase';
+import { ref, set } from 'firebase/database';
 
 const { width, height } = Dimensions.get('window');
 
@@ -29,22 +30,14 @@ export default function ChatScreen({ navigation }) {
       const userCredential = await auth.signInWithEmailAndPassword(email, password);
       const user = userCredential.user;
       
-      Alert.alert(
-        'Welcome to AFMA Chat!',
-        `Hello ${user.displayName || user.email}! You have successfully signed in.`,
-        [
-          {
-            text: 'Continue',
-            onPress: () => {
-              navigation.navigate('ChatInterface', { 
-                userEmail: user.email,
-                userName: user.displayName || user.email,
-                userId: user.uid 
-              });
-            }
-          }
-        ]
-      );
+      // Navigate directly to chat interface
+      navigation.navigate('ChatInterface', { 
+        userEmail: user.email,
+        userName: user.displayName || user.email,
+        userId: user.uid,
+        isAdmin: false
+      });
+      
     } catch (error) {
       let errorMessage = 'Login failed. Please try again.';
       
@@ -97,19 +90,25 @@ export default function ChatScreen({ navigation }) {
       await user.updateProfile({
         displayName: fullName
       });
+
+      // Store user data in database
+      await set(ref(database, `users/${user.uid}`), {
+        email: user.email,
+        displayName: fullName,
+        createdAt: new Date().toISOString(),
+        isAdmin: false
+      });
       
       Alert.alert(
         'Registration Successful!',
-        `Welcome to AFMA Chat, ${fullName}! Your account has been created successfully.`,
+        `Welcome to AFMA Chat, ${fullName}! Please sign in to continue.`,
         [
           {
-            text: 'Continue',
+            text: 'Sign In',
             onPress: () => {
-              navigation.navigate('ChatInterface', { 
-                userEmail: user.email,
-                userName: fullName,
-                userId: user.uid 
-              });
+              setIsRegistering(false);
+              setPassword('');
+              setConfirmPassword('');
             }
           }
         ]

@@ -1,6 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { View, StyleSheet, Text, Dimensions, SafeAreaView, ScrollView, TextInput, TouchableOpacity, FlatList, Alert } from 'react-native';
-import Header from '../components/Header';
+import { View, StyleSheet, Text, TextInput, TouchableOpacity, FlatList, SafeAreaView, Alert, Dimensions } from 'react-native';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 import { database, auth } from '../config/firebase';
@@ -8,15 +7,15 @@ import { ref, push, onValue, off, orderByChild, query } from 'firebase/database'
 
 const { width, height } = Dimensions.get('window');
 
-const ChatInterface = ({ navigation, route }) => {
-  const { userEmail, userName, userId, isAdmin } = route.params;
+export default function AdminChatInterface({ route, navigation }) {
+  const { userName, userId, role, isAdmin } = route.params;
+  const [message, setMessage] = useState('');
   const [messages, setMessages] = useState([]);
-  const [inputMessage, setInputMessage] = useState('');
   const [isLoading, setIsLoading] = useState(false);
-  const flatListRef = useRef();
+  const flatListRef = useRef(null);
 
   useEffect(() => {
-    // Listen for messages from admin chat
+    // Listen for messages
     const messagesRef = ref(database, 'adminChat');
     const messagesQuery = query(messagesRef, orderByChild('timestamp'));
 
@@ -35,22 +34,22 @@ const ChatInterface = ({ navigation, route }) => {
   }, []);
 
   const sendMessage = async () => {
-    if (!inputMessage.trim()) return;
+    if (!message.trim()) return;
 
     setIsLoading(true);
     try {
       const messagesRef = ref(database, 'adminChat');
       await push(messagesRef, {
-        text: inputMessage.trim(),
+        text: message.trim(),
         userId: userId,
         userName: userName,
-        userRole: 'member',
-        isAdmin: false,
+        userRole: role,
+        isAdmin: true,
         timestamp: Date.now(),
         createdAt: new Date().toISOString()
       });
       
-      setInputMessage('');
+      setMessage('');
       // Scroll to bottom after sending
       setTimeout(() => {
         flatListRef.current?.scrollToEnd({ animated: true });
@@ -73,7 +72,7 @@ const ChatInterface = ({ navigation, route }) => {
           onPress: async () => {
             try {
               await auth.signOut();
-              navigation.navigate('ChatScreenNew');
+              navigation.navigate('AdminChat');
             } catch (error) {
               Alert.alert('Error', 'Failed to sign out');
             }
@@ -139,9 +138,9 @@ const ChatInterface = ({ navigation, route }) => {
           <MaterialCommunityIcons name="arrow-left" size={24} color="#fff" />
         </TouchableOpacity>
         <View style={styles.headerInfo}>
-          <Text style={styles.headerTitle}>AFMA Chat</Text>
+          <Text style={styles.headerTitle}>Admin Chat</Text>
           <Text style={styles.headerSubtitle}>
-            Welcome {userName}
+            {userName} ({role})
           </Text>
         </View>
         <TouchableOpacity onPress={handleSignOut} style={styles.signOutButton}>
@@ -165,29 +164,29 @@ const ChatInterface = ({ navigation, route }) => {
         <View style={styles.inputWrapper}>
           <TextInput
             style={styles.textInput}
-            placeholder="Type your message to church leadership..."
+            placeholder="Type your message to church members..."
             placeholderTextColor="#999"
-            value={inputMessage}
-            onChangeText={setInputMessage}
+            value={message}
+            onChangeText={setMessage}
             multiline
             maxLength={500}
           />
           <TouchableOpacity
-            style={[styles.sendButton, (!inputMessage.trim() || isLoading) && styles.sendButtonDisabled]}
+            style={[styles.sendButton, (!message.trim() || isLoading) && styles.sendButtonDisabled]}
             onPress={sendMessage}
-            disabled={!inputMessage.trim() || isLoading}
+            disabled={!message.trim() || isLoading}
           >
             <MaterialCommunityIcons
               name={isLoading ? "loading" : "send"}
               size={24}
-              color={(!inputMessage.trim() || isLoading) ? "#ccc" : "#8B1538"}
+              color={(!message.trim() || isLoading) ? "#ccc" : "#8B1538"}
             />
           </TouchableOpacity>
         </View>
       </View>
     </SafeAreaView>
   );
-};
+}
 
 const styles = StyleSheet.create({
   container: {
@@ -310,5 +309,3 @@ const styles = StyleSheet.create({
     opacity: 0.5,
   },
 });
-
-export default ChatInterface;

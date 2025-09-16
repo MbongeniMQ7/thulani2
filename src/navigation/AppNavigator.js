@@ -8,6 +8,7 @@ import HomeScreen from '../screens/HomeScreen';
 import EventsScreen from '../screens/EventsScreen';
 import ELibraryScreen from '../screens/ELibraryScreen';
 import ChatScreen from '../screens/ChatScreen';
+import ChatScreenNew from '../screens/ChatScreenNew';
 import ChoirScreen from '../screens/ChoirScreen';
 import QueueScreen from '../screens/QueueScreen';
 import MediaCentreScreen from '../screens/MediaCentreScreen';
@@ -16,6 +17,9 @@ import BranchLocatorScreen from '../screens/BranchLocatorScreen';
 import OverseerQueueScreen from '../screens/OverseerQueueScreen';
 import PastorQueueScreen from '../screens/PastorQueueScreen';
 import PDFViewerScreen from '../screens/PDFViewerScreen';
+import ForumChatScreen from '../screens/ForumChatScreen';
+import AdminChatScreen from '../screens/AdminChatScreen';
+import AdminChatInterface from '../screens/AdminChatInterface';
 
 const { width } = Dimensions.get('window');
 const Tab = createBottomTabNavigator();
@@ -73,13 +77,13 @@ function TabNavigator() {
       />
       <Tab.Screen
         name="Chat"
-        component={ChatScreen}
+        component={ChatScreenNew}
         options={{ tabBarIcon: getTabBarIcon("chat-processing") }}
       />
       <Tab.Screen
-        name="Choir"
+        name="Forums"
         component={ChoirScreen}
-        options={{ tabBarIcon: getTabBarIcon("music") }}
+        options={{ tabBarIcon: getTabBarIcon("forum") }}
       />
       <Tab.Screen
         name="Queue"
@@ -100,6 +104,9 @@ export default function AppNavigator() {
       <Stack.Screen name="OverseerQueue" component={OverseerQueueScreen} />
       <Stack.Screen name="PastorQueue" component={PastorQueueScreen} />
       <Stack.Screen name="PDFViewer" component={PDFViewerScreen} />
+      <Stack.Screen name="ForumChat" component={ForumChatScreen} />
+      <Stack.Screen name="AdminChat" component={AdminChatScreen} />
+      <Stack.Screen name="AdminChatInterface" component={AdminChatInterface} />
     </Stack.Navigator>
   );
 }

@@ -1,41 +1,62 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { View, StyleSheet, Text, Dimensions, SafeAreaView, ScrollView, TextInput, TouchableOpacity, Alert } from 'react-native';
 import Header from '../components/Header';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
-import { auth } from '../config/firebase';
+import { auth, database } from '../config/firebase';
+import { ref, set } from 'firebase/database';
+import { getAdminCodes, storeAdminCodes } from '../config/adminCodes';
 
 const { width, height } = Dimensions.get('window');
 
-const forums = [
-  {
-    id: 'chorister',
-    name: 'Chorister Forum',
-    description: 'Connect with choir members across all regions',
-    icon: 'music'
-  },
-  {
-    id: 'cyc',
-    name: 'CYC Committee',
-    description: 'Christian Youth Committee discussions and activities',
-    icon: 'account-group'
-  }
+const adminRoles = [
+  { id: 'overseer', name: 'Overseer', icon: 'account-star' },
+  { id: 'pastor', name: 'Pastor', icon: 'account-tie' }
 ];
 
-export default function ChoirScreen({ navigation }) {
+export default function AdminChatScreen({ navigation }) {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [fullName, setFullName] = useState('');
-  const [selectedForum, setSelectedForum] = useState('');
+  const [selectedRole, setSelectedRole] = useState('');
+  const [adminCode, setAdminCode] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [isRegistering, setIsRegistering] = useState(false);
+  const [currentAdminCodes, setCurrentAdminCodes] = useState({});
 
-  const handleSignIn = async () => {
-    if (!email.trim() || !password.trim() || !selectedForum) {
-      Alert.alert('Error', 'Please fill in all fields and select a forum');
+  // Load current admin codes when component mounts
+  useEffect(() => {
+    loadAdminCodes();
+  }, []);
+
+  const loadAdminCodes = async () => {
+    try {
+      const codes = await getAdminCodes();
+      setCurrentAdminCodes(codes);
+    } catch (error) {
+      console.error('Failed to load admin codes:', error);
+      // Fallback to default codes
+      setCurrentAdminCodes({
+        overseer: 'AFMA2024OVERSEER',
+        pastor: 'AFMA2024PASTOR'
+      });
+    }
+  };
+
+  const showCurrentAdminCodes = () => {
+    Alert.alert(
+      'Current Admin Verification Codes',
+      `Overseer Code: ${currentAdminCodes.overseer || 'Loading...'}\n\nPastor Code: ${currentAdminCodes.pastor || 'Loading...'}\n\nNote: These codes are required for admin registration.`,
+      [{ text: 'OK' }]
+    );
+  };
+
+  const handleAdminSignIn = async () => {
+    if (!email.trim() || !password.trim() || !selectedRole) {
+      Alert.alert('Error', 'Please fill in all fields and select your role');
       return;
     }
 
@@ -45,15 +66,13 @@ export default function ChoirScreen({ navigation }) {
       const userCredential = await auth.signInWithEmailAndPassword(email, password);
       const user = userCredential.user;
       
-      const selectedForumData = forums.find(f => f.id === selectedForum);
-      
-      // Navigate directly to chat
-      navigation.navigate('ForumChat', {
+      // Navigate to admin chat interface
+      navigation.navigate('AdminChatInterface', {
         userEmail: user.email,
         userName: user.displayName || user.email,
         userId: user.uid,
-        forum: selectedForum,
-        forumName: selectedForumData.name
+        role: selectedRole,
+        isAdmin: true
       });
       
     } catch (error) {
@@ -61,7 +80,7 @@ export default function ChoirScreen({ navigation }) {
       
       switch (error.code) {
         case 'auth/user-not-found':
-          errorMessage = 'No account found with this email. Please register first.';
+          errorMessage = 'No admin account found with this email.';
           break;
         case 'auth/wrong-password':
           errorMessage = 'Incorrect password. Please try again.';
@@ -69,22 +88,19 @@ export default function ChoirScreen({ navigation }) {
         case 'auth/invalid-email':
           errorMessage = 'Please enter a valid email address.';
           break;
-        case 'auth/user-disabled':
-          errorMessage = 'This account has been disabled. Please contact support.';
-          break;
         default:
           errorMessage = error.message;
       }
       
-      Alert.alert('Login Failed', errorMessage);
+      Alert.alert('Admin Login Failed', errorMessage);
     } finally {
       setIsLoading(false);
     }
   };
 
-  const handleRegister = async () => {
-    if (!email.trim() || !password.trim() || !confirmPassword.trim() || !fullName.trim() || !selectedForum) {
-      Alert.alert('Error', 'Please fill in all fields and select a forum');
+  const handleAdminRegister = async () => {
+    if (!email.trim() || !password.trim() || !confirmPassword.trim() || !fullName.trim() || !selectedRole || !adminCode.trim()) {
+      Alert.alert('Error', 'Please fill in all fields including admin verification code');
       return;
     }
 
@@ -98,40 +114,60 @@ export default function ChoirScreen({ navigation }) {
       return;
     }
 
+    // Verify admin code
+    if (adminCode !== currentAdminCodes[selectedRole]) {
+      Alert.alert('Error', 'Invalid admin verification code for selected role');
+      return;
+    }
+
     setIsLoading(true);
 
     try {
       const userCredential = await auth.createUserWithEmailAndPassword(email, password);
       const user = userCredential.user;
       
-      // Update user profile with display name
+      // Update user profile
       await user.updateProfile({
         displayName: fullName
       });
-      
-      const selectedForumData = forums.find(f => f.id === selectedForum);
+
+      // Store admin role in database
+      await set(ref(database, `admins/${user.uid}`), {
+        email: user.email,
+        displayName: fullName,
+        role: selectedRole,
+        createdAt: new Date().toISOString(),
+        isAdmin: true
+      });
+
+      // Generate new admin codes after successful registration
+      const newCodes = await storeAdminCodes();
+      setCurrentAdminCodes(newCodes);
       
       Alert.alert(
-        'Registration Successful!',
-        `Welcome to ${selectedForumData.name}, ${fullName}! Please sign in to continue.`,
+        'Admin Registration Successful!',
+        `Welcome ${fullName}!\n\nYour ${selectedRole} account has been created.\n\nNEW ADMIN CODES:\nOverseer: ${newCodes.overseer}\nPastor: ${newCodes.pastor}\n\nPlease save these codes securely for future admin registrations.`,
         [
           {
-            text: 'Sign In',
+            text: 'Continue',
             onPress: () => {
-              setIsRegistering(false);
-              setPassword('');
-              setConfirmPassword('');
+              navigation.navigate('AdminChatInterface', {
+                userEmail: user.email,
+                userName: fullName,
+                userId: user.uid,
+                role: selectedRole,
+                isAdmin: true
+              });
             }
           }
         ]
       );
-      
     } catch (error) {
       let errorMessage = 'Registration failed. Please try again.';
       
       switch (error.code) {
         case 'auth/email-already-in-use':
-          errorMessage = 'An account with this email already exists. Please sign in instead.';
+          errorMessage = 'An account with this email already exists.';
           break;
         case 'auth/invalid-email':
           errorMessage = 'Please enter a valid email address.';
@@ -149,24 +185,10 @@ export default function ChoirScreen({ navigation }) {
     }
   };
 
-  const handleForgotPassword = async () => {
-    if (!email.trim()) {
-      Alert.alert('Error', 'Please enter your email address first');
-      return;
-    }
-
-    try {
-      await auth.sendPasswordResetEmail(email);
-      Alert.alert('Password Reset', 'Password reset email sent! Please check your inbox.');
-    } catch (error) {
-      Alert.alert('Error', 'Failed to send password reset email. Please check your email address.');
-    }
-  };
-
   return (
     <SafeAreaView style={styles.safeArea}>
       <View style={styles.container}>
-        <Header title="AFMA Forums" subtitle="Community Discussion Boards • Member Access" />
+        <Header title="Admin Access" subtitle="Overseer & Pastor Login • Church Leadership" />
         
         <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
           {/* Header Section */}
@@ -174,47 +196,48 @@ export default function ChoirScreen({ navigation }) {
             colors={['#8B1538', '#A61B46', '#C02454']}
             style={styles.headerCard}
           >
-            <MaterialCommunityIcons name="forum" size={48} color="#fff" />
-            <Text style={styles.headerTitle}>AFMA Forums</Text>
-            <Text style={styles.headerSubtitle}>Join our community discussion boards</Text>
+            <MaterialCommunityIcons name="shield-account" size={48} color="#fff" />
+            <Text style={styles.headerTitle}>Admin Portal</Text>
+            <Text style={styles.headerSubtitle}>Authorized access for church leadership</Text>
           </LinearGradient>
 
-          {/* Forum Selection */}
-          <View style={styles.forumSelectionContainer}>
-            <Text style={styles.forumSelectionTitle}>Choose Your Forum</Text>
-            {forums.map((forum) => (
-              <TouchableOpacity
-                key={forum.id}
-                style={[
-                  styles.forumCard,
-                  selectedForum === forum.id && styles.selectedForumCard
-                ]}
-                onPress={() => setSelectedForum(forum.id)}
+          {/* Role Selection */}
+          <View style={styles.roleSelectionContainer}>
+            <View style={styles.roleHeaderContainer}>
+              <Text style={styles.roleSelectionTitle}>Select Your Role</Text>
+              <TouchableOpacity 
+                style={styles.viewCodesButton}
+                onPress={showCurrentAdminCodes}
               >
-                <View style={styles.forumCardContent}>
+                <MaterialCommunityIcons name="eye" size={16} color="#8B1538" />
+                <Text style={styles.viewCodesText}>View Codes</Text>
+              </TouchableOpacity>
+            </View>
+            {adminRoles.map((role) => (
+              <TouchableOpacity
+                key={role.id}
+                style={[
+                  styles.roleCard,
+                  selectedRole === role.id && styles.selectedRoleCard
+                ]}
+                onPress={() => setSelectedRole(role.id)}
+              >
+                <View style={styles.roleCardContent}>
                   <MaterialCommunityIcons 
-                    name={forum.icon} 
+                    name={role.icon} 
                     size={32} 
-                    color={selectedForum === forum.id ? "#fff" : "#8B1538"} 
+                    color={selectedRole === role.id ? "#fff" : "#8B1538"} 
                   />
-                  <View style={styles.forumTextContainer}>
-                    <Text style={[
-                      styles.forumName,
-                      selectedForum === forum.id && styles.selectedForumText
-                    ]}>
-                      {forum.name}
-                    </Text>
-                    <Text style={[
-                      styles.forumDescription,
-                      selectedForum === forum.id && styles.selectedForumDescText
-                    ]}>
-                      {forum.description}
-                    </Text>
-                  </View>
+                  <Text style={[
+                    styles.roleName,
+                    selectedRole === role.id && styles.selectedRoleText
+                  ]}>
+                    {role.name}
+                  </Text>
                   <MaterialCommunityIcons 
-                    name={selectedForum === forum.id ? "check-circle" : "circle-outline"} 
+                    name={selectedRole === role.id ? "check-circle" : "circle-outline"} 
                     size={24} 
-                    color={selectedForum === forum.id ? "#fff" : "#8B1538"} 
+                    color={selectedRole === role.id ? "#fff" : "#8B1538"} 
                   />
                 </View>
               </TouchableOpacity>
@@ -253,7 +276,7 @@ export default function ChoirScreen({ navigation }) {
                 </View>
               </View>
             )}
-            
+
             {/* Email Input */}
             <View style={styles.inputSection}>
               <Text style={styles.inputLabel}>Email Address</Text>
@@ -261,7 +284,7 @@ export default function ChoirScreen({ navigation }) {
                 <MaterialCommunityIcons name="email" size={20} color="#8B1538" style={styles.inputIcon} />
                 <TextInput
                   style={styles.textInput}
-                  placeholder="your.email@example.com"
+                  placeholder="your.email@afma.org"
                   placeholderTextColor="#999"
                   value={email}
                   onChangeText={setEmail}
@@ -295,39 +318,50 @@ export default function ChoirScreen({ navigation }) {
             </View>
 
             {isRegistering && (
-              <View style={styles.inputSection}>
-                <Text style={styles.inputLabel}>Confirm Password</Text>
-                <View style={styles.inputContainer}>
-                  <MaterialCommunityIcons name="lock-check" size={20} color="#8B1538" style={styles.inputIcon} />
-                  <TextInput
-                    style={styles.textInput}
-                    placeholder="Confirm your password"
-                    placeholderTextColor="#999"
-                    value={confirmPassword}
-                    onChangeText={setConfirmPassword}
-                    secureTextEntry={!showConfirmPassword}
-                  />
-                  <TouchableOpacity onPress={() => setShowConfirmPassword(!showConfirmPassword)}>
-                    <MaterialCommunityIcons 
-                      name={showConfirmPassword ? "eye-off" : "eye"} 
-                      size={20} 
-                      color="#666" 
+              <>
+                <View style={styles.inputSection}>
+                  <Text style={styles.inputLabel}>Confirm Password</Text>
+                  <View style={styles.inputContainer}>
+                    <MaterialCommunityIcons name="lock-check" size={20} color="#8B1538" style={styles.inputIcon} />
+                    <TextInput
+                      style={styles.textInput}
+                      placeholder="Confirm your password"
+                      placeholderTextColor="#999"
+                      value={confirmPassword}
+                      onChangeText={setConfirmPassword}
+                      secureTextEntry={!showConfirmPassword}
                     />
-                  </TouchableOpacity>
+                    <TouchableOpacity onPress={() => setShowConfirmPassword(!showConfirmPassword)}>
+                      <MaterialCommunityIcons 
+                        name={showConfirmPassword ? "eye-off" : "eye"} 
+                        size={20} 
+                        color="#666" 
+                      />
+                    </TouchableOpacity>
+                  </View>
                 </View>
-              </View>
-            )}
 
-            {!isRegistering && (
-              <TouchableOpacity onPress={handleForgotPassword} style={styles.forgotButton}>
-                <Text style={styles.forgotText}>Forgot password?</Text>
-              </TouchableOpacity>
+                <View style={styles.inputSection}>
+                  <Text style={styles.inputLabel}>Admin Verification Code</Text>
+                  <View style={styles.inputContainer}>
+                    <MaterialCommunityIcons name="shield-key" size={20} color="#8B1538" style={styles.inputIcon} />
+                    <TextInput
+                      style={styles.textInput}
+                      placeholder="Enter admin verification code"
+                      placeholderTextColor="#999"
+                      value={adminCode}
+                      onChangeText={setAdminCode}
+                      autoCapitalize="characters"
+                    />
+                  </View>
+                </View>
+              </>
             )}
 
             {/* Sign In Button */}
             <TouchableOpacity 
               style={[styles.signInButton, isLoading && styles.signInButtonDisabled]} 
-              onPress={isRegistering ? handleRegister : handleSignIn}
+              onPress={isRegistering ? handleAdminRegister : handleAdminSignIn}
               disabled={isLoading}
             >
               <LinearGradient
@@ -343,9 +377,9 @@ export default function ChoirScreen({ navigation }) {
                   </>
                 ) : (
                   <>
-                    <MaterialCommunityIcons name={isRegistering ? "account-plus" : "forum"} size={20} color="#fff" />
+                    <MaterialCommunityIcons name={isRegistering ? "shield-plus" : "shield-account"} size={20} color="#fff" />
                     <Text style={styles.signInButtonText}>
-                      {isRegistering ? 'JOIN FORUM' : 'SIGN IN TO FORUM'}
+                      {isRegistering ? 'CREATE ADMIN ACCOUNT' : 'ADMIN SIGN IN'}
                     </Text>
                   </>
                 )}
@@ -353,34 +387,12 @@ export default function ChoirScreen({ navigation }) {
             </TouchableOpacity>
           </View>
 
-          {/* Features Section */}
-          <View style={styles.featuresContainer}>
-            <Text style={styles.featuresTitle}>Forum Features</Text>
-            
-            <View style={styles.featureItem}>
-              <MaterialCommunityIcons name="forum" size={24} color="#8B1538" />
-              <Text style={styles.featureText}>Community discussions</Text>
-            </View>
-            
-            <View style={styles.featureItem}>
-              <MaterialCommunityIcons name="calendar" size={24} color="#8B1538" />
-              <Text style={styles.featureText}>Events & announcements</Text>
-            </View>
-            
-            <View style={styles.featureItem}>
-              <MaterialCommunityIcons name="file-document" size={24} color="#8B1538" />
-              <Text style={styles.featureText}>Document sharing</Text>
-            </View>
-            
-            <View style={styles.featureItem}>
-              <MaterialCommunityIcons name="account-group" size={24} color="#8B1538" />
-              <Text style={styles.featureText}>Connect with members</Text>
-            </View>
-
-            <View style={styles.featureItem}>
-              <MaterialCommunityIcons name="chat" size={24} color="#8B1538" />
-              <Text style={styles.featureText}>Real-time messaging</Text>
-            </View>
+          {/* Security Notice */}
+          <View style={styles.securityContainer}>
+            <MaterialCommunityIcons name="security" size={24} color="#8B1538" />
+            <Text style={styles.securityText}>
+              This is a secure admin portal. Only authorized church leadership can access this area.
+            </Text>
           </View>
         </ScrollView>
       </View>
@@ -425,17 +437,37 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     marginTop: height * 0.005,
   },
-  forumSelectionContainer: {
+  roleSelectionContainer: {
     marginBottom: height * 0.03,
   },
-  forumSelectionTitle: {
+  roleHeaderContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: height * 0.02,
+  },
+  roleSelectionTitle: {
     fontSize: Math.min(width * 0.045, 18),
     fontWeight: '700',
     color: '#8B1538',
-    marginBottom: height * 0.02,
-    textAlign: 'center',
   },
-  forumCard: {
+  viewCodesButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#f8f9fa',
+    paddingHorizontal: width * 0.03,
+    paddingVertical: height * 0.008,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: '#8B1538',
+  },
+  viewCodesText: {
+    fontSize: width * 0.03,
+    color: '#8B1538',
+    marginLeft: 4,
+    fontWeight: '600',
+  },
+  roleCard: {
     backgroundColor: '#fff',
     borderRadius: 15,
     padding: width * 0.04,
@@ -448,33 +480,24 @@ const styles = StyleSheet.create({
     shadowRadius: 4,
     elevation: 3,
   },
-  selectedForumCard: {
+  selectedRoleCard: {
     backgroundColor: '#8B1538',
     borderColor: '#8B1538',
   },
-  forumCardContent: {
+  roleCardContent: {
     flexDirection: 'row',
     alignItems: 'center',
+    justifyContent: 'space-between',
   },
-  forumTextContainer: {
-    flex: 1,
-    marginLeft: width * 0.03,
-  },
-  forumName: {
+  roleName: {
     fontSize: Math.min(width * 0.045, 18),
     fontWeight: '700',
     color: '#8B1538',
-    marginBottom: height * 0.005,
+    flex: 1,
+    marginLeft: width * 0.03,
   },
-  selectedForumText: {
+  selectedRoleText: {
     color: '#fff',
-  },
-  forumDescription: {
-    fontSize: Math.min(width * 0.035, 14),
-    color: '#666',
-  },
-  selectedForumDescText: {
-    color: 'rgba(255,255,255,0.9)',
   },
   formContainer: {
     backgroundColor: '#fff',
@@ -511,13 +534,6 @@ const styles = StyleSheet.create({
   activeTabText: {
     color: '#fff',
   },
-  formTitle: {
-    fontSize: Math.min(width * 0.05, 20),
-    fontWeight: '700',
-    color: '#8B1538',
-    marginBottom: height * 0.025,
-    textAlign: 'center',
-  },
   inputSection: {
     marginBottom: height * 0.02,
   },
@@ -545,24 +561,6 @@ const styles = StyleSheet.create({
     fontSize: Math.min(width * 0.04, 16),
     color: '#333',
   },
-  forgotButton: {
-    alignSelf: 'flex-end',
-    marginBottom: height * 0.02,
-  },
-  forgotText: {
-    fontSize: Math.min(width * 0.035, 14),
-    color: '#8B1538',
-    fontWeight: '600',
-  },
-  forgotButton: {
-    alignSelf: 'flex-end',
-    marginBottom: height * 0.02,
-  },
-  forgotText: {
-    fontSize: Math.min(width * 0.035, 14),
-    color: '#8B1538',
-    fontWeight: '600',
-  },
   signInButton: {
     borderRadius: 15,
     shadowColor: '#4CAF50',
@@ -584,46 +582,19 @@ const styles = StyleSheet.create({
     fontWeight: '700',
     marginLeft: 8,
   },
-  demoContainer: {
+  securityContainer: {
+    flexDirection: 'row',
     backgroundColor: 'rgba(139, 21, 56, 0.1)',
     borderRadius: 12,
     padding: width * 0.04,
     marginBottom: height * 0.03,
     borderLeftWidth: 4,
     borderLeftColor: '#8B1538',
+    alignItems: 'center',
   },
-  demoTitle: {
-    fontSize: Math.min(width * 0.04, 16),
-    fontWeight: '700',
-    color: '#8B1538',
-    marginBottom: height * 0.01,
-  },
-  demoText: {
+  securityText: {
     fontSize: Math.min(width * 0.035, 14),
     color: '#8B1538',
-    marginBottom: height * 0.005,
-  },
-  featuresContainer: {
-    backgroundColor: '#fff',
-    borderRadius: 15,
-    padding: width * 0.05,
-    marginBottom: height * 0.03,
-  },
-  featuresTitle: {
-    fontSize: Math.min(width * 0.045, 18),
-    fontWeight: '700',
-    color: '#8B1538',
-    marginBottom: height * 0.02,
-    textAlign: 'center',
-  },
-  featureItem: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: height * 0.015,
-  },
-  featureText: {
-    fontSize: Math.min(width * 0.04, 16),
-    color: '#333',
     marginLeft: width * 0.03,
     flex: 1,
   },
