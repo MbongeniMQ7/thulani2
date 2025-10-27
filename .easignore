@@ -14,3 +14,5 @@ src/dataconnect-generated
 .firebaserc
 firebase.json
 tsconfig.json
+dist
+dist-*
