@@ -17,9 +17,6 @@
         "buildType": "apk",
         "gradleCommand": ":app:assembleRelease"
       },
-      "env": {
-        "NODE_ENV": "production"
-      },
       "node": "20.18.1"
     },
     "development": {
