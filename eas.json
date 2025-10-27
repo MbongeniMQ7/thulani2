@@ -17,6 +17,9 @@
         "buildType": "apk",
         "gradleCommand": ":app:assembleRelease"
       },
+      "env": {
+        "REANIMATED_PLUGIN_TESTS": "0"
+      },
       "node": "20.18.1"
     },
     "development": {
