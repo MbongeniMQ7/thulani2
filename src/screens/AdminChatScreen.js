@@ -1,13 +1,17 @@
 import React, { useState, useEffect } from 'react';
-import { View, StyleSheet, Text, Dimensions, SafeAreaView, ScrollView, TextInput, TouchableOpacity, Alert } from 'react-native';
+import { View, StyleSheet, Text, Dimensions, ScrollView, TextInput, TouchableOpacity, Alert } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import Header from '../components/Header';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 import { auth, database } from '../config/firebase';
 import { ref, set } from 'firebase/database';
-import { getAdminCodes, storeAdminCodes } from '../config/adminCodes';
+import { useAuth } from '../context/AuthContext';
 
 const { width, height } = Dimensions.get('window');
+
+// Fixed admin code - never changes
+const ADMIN_CODE = 'AFMA2025';
 
 const adminRoles = [
   { id: 'overseer', name: 'Overseer', icon: 'account-star' },
@@ -15,6 +19,7 @@ const adminRoles = [
 ];
 
 export default function AdminChatScreen({ navigation }) {
+  const { isUserAuthenticated, getUserEmail, getUserName, getUserId } = useAuth();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
@@ -25,38 +30,59 @@ export default function AdminChatScreen({ navigation }) {
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [isRegistering, setIsRegistering] = useState(false);
-  const [currentAdminCodes, setCurrentAdminCodes] = useState({});
 
-  // Load current admin codes when component mounts
+  // Check if user is already authenticated and redirect to role selection
   useEffect(() => {
-    loadAdminCodes();
+    if (isUserAuthenticated()) {
+      // Skip login form and go directly to role selection
+      setEmail(getUserEmail() || '');
+      setFullName(getUserName() || '');
+    }
   }, []);
 
-  const loadAdminCodes = async () => {
+  // Handle admin access for already authenticated users
+  const handleAuthenticatedAdminAccess = async () => {
+    if (!selectedRole || !adminCode.trim()) {
+      Alert.alert('Error', 'Please select your role and enter the admin code');
+      return;
+    }
+
+    setIsLoading(true);
+
     try {
-      const codes = await getAdminCodes();
-      setCurrentAdminCodes(codes);
-    } catch (error) {
-      console.error('Failed to load admin codes:', error);
-      // Fallback to default codes
-      setCurrentAdminCodes({
-        overseer: 'AFMA2024OVERSEER',
-        pastor: 'AFMA2024PASTOR'
+      // Verify admin code (fixed AFMA2025)
+      if (adminCode !== ADMIN_CODE) {
+        Alert.alert('Invalid Admin Code', 'The admin code you entered is incorrect.');
+        setIsLoading(false);
+        return;
+      }
+
+      // Navigate directly to admin chat interface
+      navigation.navigate('AdminChatInterface', {
+        userEmail: getUserEmail(),
+        userName: getUserName(),
+        userId: getUserId(),
+        role: selectedRole,
+        isAdmin: true
       });
+      
+    } catch (error) {
+      console.error('Admin access error:', error);
+      Alert.alert('Error', 'Failed to access admin interface. Please try again.');
+    } finally {
+      setIsLoading(false);
     }
   };
 
-  const showCurrentAdminCodes = () => {
-    Alert.alert(
-      'Current Admin Verification Codes',
-      `Overseer Code: ${currentAdminCodes.overseer || 'Loading...'}\n\nPastor Code: ${currentAdminCodes.pastor || 'Loading...'}\n\nNote: These codes are required for admin registration.`,
-      [{ text: 'OK' }]
-    );
-  };
+  const handleSignIn = async () => {
+    if (!email.trim() || !password.trim() || !selectedRole || !adminCode.trim()) {
+      Alert.alert('Error', 'Please fill in all fields including admin verification code');
+      return;
+    }
 
-  const handleAdminSignIn = async () => {
-    if (!email.trim() || !password.trim() || !selectedRole) {
-      Alert.alert('Error', 'Please fill in all fields and select your role');
+    // Verify admin code (fixed AFMA2025)
+    if (adminCode !== ADMIN_CODE) {
+      Alert.alert('Error', 'Invalid admin verification code');
       return;
     }
 
@@ -66,27 +92,37 @@ export default function AdminChatScreen({ navigation }) {
       const userCredential = await auth.signInWithEmailAndPassword(email, password);
       const user = userCredential.user;
       
-      // Navigate to admin chat interface
+      // Store admin role in database
+      await set(ref(database, `admins/${user.uid}`), {
+        email: user.email,
+        displayName: user.displayName || fullName || email,
+        role: selectedRole,
+        lastLogin: new Date().toISOString(),
+        isAdmin: true
+      });
+      
       navigation.navigate('AdminChatInterface', {
         userEmail: user.email,
-        userName: user.displayName || user.email,
+        userName: user.displayName || fullName || email,
         userId: user.uid,
         role: selectedRole,
         isAdmin: true
       });
-      
     } catch (error) {
       let errorMessage = 'Login failed. Please try again.';
       
       switch (error.code) {
         case 'auth/user-not-found':
-          errorMessage = 'No admin account found with this email.';
+          errorMessage = 'No account found with this email address.';
           break;
         case 'auth/wrong-password':
-          errorMessage = 'Incorrect password. Please try again.';
+          errorMessage = 'Incorrect password.';
           break;
         case 'auth/invalid-email':
           errorMessage = 'Please enter a valid email address.';
+          break;
+        case 'auth/user-disabled':
+          errorMessage = 'This account has been disabled.';
           break;
         default:
           errorMessage = error.message;
@@ -114,8 +150,8 @@ export default function AdminChatScreen({ navigation }) {
       return;
     }
 
-    // Verify admin code
-    if (adminCode !== currentAdminCodes[selectedRole]) {
+    // Verify admin code (fixed AFMA2025)
+    if (adminCode !== ADMIN_CODE) {
       Alert.alert('Error', 'Invalid admin verification code for selected role');
       return;
     }
@@ -139,14 +175,10 @@ export default function AdminChatScreen({ navigation }) {
         createdAt: new Date().toISOString(),
         isAdmin: true
       });
-
-      // Generate new admin codes after successful registration
-      const newCodes = await storeAdminCodes();
-      setCurrentAdminCodes(newCodes);
       
       Alert.alert(
         'Admin Registration Successful!',
-        `Welcome ${fullName}!\n\nYour ${selectedRole} account has been created.\n\nNEW ADMIN CODES:\nOverseer: ${newCodes.overseer}\nPastor: ${newCodes.pastor}\n\nPlease save these codes securely for future admin registrations.`,
+        `Welcome ${fullName}!\n\nYour ${selectedRole} account has been created successfully.`,
         [
           {
             text: 'Continue',
@@ -201,17 +233,18 @@ export default function AdminChatScreen({ navigation }) {
             <Text style={styles.headerSubtitle}>Authorized access for church leadership</Text>
           </LinearGradient>
 
+          {/* Admin Code Information */}
+          <View style={styles.infoCard}>
+            <MaterialCommunityIcons name="information" size={24} color="#8B1538" />
+            <Text style={styles.infoText}>
+              Admin Code Required: <Text style={styles.codeText}>AFMA2025</Text>
+            </Text>
+          </View>
+
           {/* Role Selection */}
           <View style={styles.roleSelectionContainer}>
             <View style={styles.roleHeaderContainer}>
               <Text style={styles.roleSelectionTitle}>Select Your Role</Text>
-              <TouchableOpacity 
-                style={styles.viewCodesButton}
-                onPress={showCurrentAdminCodes}
-              >
-                <MaterialCommunityIcons name="eye" size={16} color="#8B1538" />
-                <Text style={styles.viewCodesText}>View Codes</Text>
-              </TouchableOpacity>
             </View>
             {adminRoles.map((role) => (
               <TouchableOpacity
@@ -244,22 +277,56 @@ export default function AdminChatScreen({ navigation }) {
             ))}
           </View>
 
-          {/* Login Form */}
-          <View style={styles.formContainer}>
-            <View style={styles.tabContainer}>
-              <TouchableOpacity 
-                style={[styles.tab, !isRegistering && styles.activeTab]}
-                onPress={() => setIsRegistering(false)}
-              >
-                <Text style={[styles.tabText, !isRegistering && styles.activeTabText]}>Sign In</Text>
-              </TouchableOpacity>
-              <TouchableOpacity 
-                style={[styles.tab, isRegistering && styles.activeTab]}
-                onPress={() => setIsRegistering(true)}
-              >
-                <Text style={[styles.tabText, isRegistering && styles.activeTabText]}>Register</Text>
-              </TouchableOpacity>
+          {/* Admin Code Section - Always Visible */}
+          <View style={styles.adminCodeContainer}>
+            <Text style={styles.adminCodeTitle}>Admin Verification Code</Text>
+            <Text style={styles.adminCodeSubtitle}>Enter AFMA2025 to continue</Text>
+            <View style={styles.inputContainer}>
+              <MaterialCommunityIcons name="key" size={20} color="#8B1538" style={styles.inputIcon} />
+              <TextInput
+                style={styles.textInput}
+                placeholder="Enter admin code (AFMA2025)"
+                placeholderTextColor="#999"
+                value={adminCode}
+                onChangeText={setAdminCode}
+                autoCapitalize="characters"
+                secureTextEntry
+              />
             </View>
+          </View>
+
+          {/* User Status Display for Already Authenticated Users */}
+          {isUserAuthenticated() && (
+            <View style={styles.authenticatedUserContainer}>
+              <LinearGradient
+                colors={['#10B981', '#059669']}
+                style={styles.authenticatedBadge}
+              >
+                <MaterialCommunityIcons name="check-circle" size={24} color="#fff" />
+                <Text style={styles.authenticatedText}>Already Signed In</Text>
+              </LinearGradient>
+              <Text style={styles.authenticatedEmail}>{getUserEmail()}</Text>
+              <Text style={styles.authenticatedNote}>Please select your role and admin code to continue</Text>
+            </View>
+          )}
+
+          {/* Login Form - Hidden if already authenticated */}
+          {!isUserAuthenticated() && (
+            <View style={styles.formContainer}>
+              <View style={styles.tabContainer}>
+                <TouchableOpacity 
+                  style={[styles.tab, !isRegistering && styles.activeTab]}
+                  onPress={() => setIsRegistering(false)}
+                >
+                  <Text style={[styles.tabText, !isRegistering && styles.activeTabText]}>Sign In</Text>
+                </TouchableOpacity>
+                <TouchableOpacity 
+                  style={[styles.tab, isRegistering && styles.activeTab]}
+                  onPress={() => setIsRegistering(true)}
+                >
+                  <Text style={[styles.tabText, isRegistering && styles.activeTabText]}>Register</Text>
+                </TouchableOpacity>
+              </View>
 
             {isRegistering && (
               <View style={styles.inputSection}>
@@ -361,7 +428,7 @@ export default function AdminChatScreen({ navigation }) {
             {/* Sign In Button */}
             <TouchableOpacity 
               style={[styles.signInButton, isLoading && styles.signInButtonDisabled]} 
-              onPress={isRegistering ? handleAdminRegister : handleAdminSignIn}
+              onPress={isRegistering ? handleAdminRegister : handleSignIn}
               disabled={isLoading}
             >
               <LinearGradient
@@ -386,6 +453,35 @@ export default function AdminChatScreen({ navigation }) {
               </LinearGradient>
             </TouchableOpacity>
           </View>
+          )}
+
+          {/* Action Button for Already Authenticated Users */}
+          {isUserAuthenticated() && (
+            <View style={styles.formContainer}>
+              <TouchableOpacity 
+                style={[styles.signInButton, (!selectedRole || !adminCode.trim() || isLoading) && styles.disabledButton]}
+                onPress={handleAuthenticatedAdminAccess}
+                disabled={!selectedRole || !adminCode.trim() || isLoading}
+              >
+                <LinearGradient
+                  colors={(!selectedRole || !adminCode.trim() || isLoading) ? ['#94a3b8', '#64748b'] : ['#8B1538', '#A61B46', '#C02454']}
+                  style={styles.signInGradient}
+                >
+                  {isLoading ? (
+                    <>
+                      <MaterialCommunityIcons name="loading" size={20} color="#fff" />
+                      <Text style={styles.signInButtonText}>VERIFYING ACCESS...</Text>
+                    </>
+                  ) : (
+                    <>
+                      <MaterialCommunityIcons name="shield-check" size={20} color="#fff" />
+                      <Text style={styles.signInButtonText}>ACCESS ADMIN PORTAL</Text>
+                    </>
+                  )}
+                </LinearGradient>
+              </TouchableOpacity>
+            </View>
+          )}
 
           {/* Security Notice */}
           <View style={styles.securityContainer}>
@@ -451,22 +547,7 @@ const styles = StyleSheet.create({
     fontWeight: '700',
     color: '#8B1538',
   },
-  viewCodesButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: '#f8f9fa',
-    paddingHorizontal: width * 0.03,
-    paddingVertical: height * 0.008,
-    borderRadius: 8,
-    borderWidth: 1,
-    borderColor: '#8B1538',
-  },
-  viewCodesText: {
-    fontSize: width * 0.03,
-    color: '#8B1538',
-    marginLeft: 4,
-    fontWeight: '600',
-  },
+
   roleCard: {
     backgroundColor: '#fff',
     borderRadius: 15,
@@ -597,5 +678,87 @@ const styles = StyleSheet.create({
     color: '#8B1538',
     marginLeft: width * 0.03,
     flex: 1,
+  },
+  // Authenticated User Styles
+  authenticatedUserContainer: {
+    backgroundColor: '#fff',
+    borderRadius: 16,
+    padding: width * 0.04,
+    marginBottom: height * 0.02,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 3,
+  },
+  authenticatedBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: height * 0.01,
+    paddingHorizontal: width * 0.04,
+    borderRadius: 12,
+    marginBottom: height * 0.01,
+  },
+  authenticatedText: {
+    color: '#fff',
+    fontSize: Math.min(width * 0.035, 14),
+    fontWeight: '700',
+    marginLeft: width * 0.02,
+  },
+  authenticatedEmail: {
+    fontSize: Math.min(width * 0.038, 15),
+    fontWeight: '600',
+    color: '#8B1538',
+    textAlign: 'center',
+    marginBottom: height * 0.005,
+  },
+  authenticatedNote: {
+    fontSize: Math.min(width * 0.032, 13),
+    color: '#64748b',
+    textAlign: 'center',
+    lineHeight: Math.min(width * 0.04, 16),
+  },
+  adminCodeContainer: {
+    backgroundColor: '#fff',
+    borderRadius: 16,
+    padding: width * 0.04,
+    marginBottom: height * 0.02,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 3,
+  },
+  adminCodeTitle: {
+    fontSize: Math.min(width * 0.042, 17),
+    fontWeight: '700',
+    color: '#1e293b',
+    marginBottom: height * 0.005,
+    textAlign: 'center',
+  },
+  adminCodeSubtitle: {
+    fontSize: Math.min(width * 0.032, 13),
+    color: '#64748b',
+    textAlign: 'center',
+    marginBottom: height * 0.015,
+    lineHeight: Math.min(width * 0.04, 16),
+  },
+  infoCard: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#e6f3ff',
+    padding: 15,
+    borderRadius: 10,
+    marginBottom: 20,
+  },
+  infoText: {
+    marginLeft: 10,
+    fontSize: 14,
+    color: '#8B1538',
+  },
+  codeText: {
+    fontWeight: 'bold',
+    fontFamily: 'monospace',
   },
 });

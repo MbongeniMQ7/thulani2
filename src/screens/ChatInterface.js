@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { View, StyleSheet, Text, Dimensions, SafeAreaView, ScrollView, TextInput, TouchableOpacity, FlatList, Alert } from 'react-native';
+import { View, StyleSheet, Text, Dimensions, ScrollView, TextInput, TouchableOpacity, FlatList, Alert } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import Header from '../components/Header';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';

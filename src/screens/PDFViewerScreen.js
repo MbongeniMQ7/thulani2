@@ -11,7 +11,7 @@ import {
   StatusBar
 } from 'react-native';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
-import * as FileSystem from 'expo-file-system';
+import * as FileSystem from 'expo-file-system/legacy';
 import * as Sharing from 'expo-sharing';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Asset } from 'expo-asset';

@@ -1,17 +1,19 @@
-import React, { useState } from 'react';
-import { View, StyleSheet, Text, Dimensions, SafeAreaView, ScrollView, TextInput, TouchableOpacity, Alert } from 'react-native';
+import React, { useState, useEffect } from 'react';
+import { View, StyleSheet, Text, Dimensions, ScrollView, TouchableOpacity, TextInput, Alert } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import Header from '../components/Header';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 import { auth } from '../config/firebase';
+import { useAuth } from '../context/AuthContext';
 
 const { width, height } = Dimensions.get('window');
 
 const forums = [
   {
     id: 'chorister',
-    name: 'Chorister Forum',
-    description: 'Connect with choir members across all regions',
+    name: 'Choristers Forum',
+    description: 'forum for updates on all matters of music.',
     icon: 'music'
   },
   {
@@ -22,7 +24,8 @@ const forums = [
   }
 ];
 
-export default function ChoirScreen({ navigation }) {
+export default function ChoirScreen({ navigation, route }) {
+  const { isUserAuthenticated, getUserEmail, getUserName, getUserId } = useAuth();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
@@ -32,6 +35,20 @@ export default function ChoirScreen({ navigation }) {
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [isRegistering, setIsRegistering] = useState(false);
+
+  // Check if user is already authenticated and get forum from navigation
+  useEffect(() => {
+    if (isUserAuthenticated()) {
+      // Pre-fill user information
+      setEmail(getUserEmail() || '');
+      setFullName(getUserName() || '');
+    }
+    
+    // Pre-select forum from navigation params
+    if (route?.params?.forumId) {
+      setSelectedForum(route.params.forumId);
+    }
+  }, [route?.params?.forumId]);
 
   const handleSignIn = async () => {
     if (!email.trim() || !password.trim() || !selectedForum) {
@@ -163,6 +180,25 @@ export default function ChoirScreen({ navigation }) {
     }
   };
 
+  // Function for already authenticated users to join forum directly
+  const handleAuthenticatedForumAccess = () => {
+    if (!selectedForum) {
+      Alert.alert('Error', 'Please select a forum to continue');
+      return;
+    }
+
+    const selectedForumData = forums.find(f => f.id === selectedForum);
+    
+    // Navigate directly to chat
+    navigation.navigate('ForumChat', {
+      userEmail: getUserEmail(),
+      userName: getUserName(),
+      userId: getUserId(),
+      forum: selectedForum,
+      forumName: selectedForumData.name
+    });
+  };
+
   return (
     <SafeAreaView style={styles.safeArea}>
       <View style={styles.container}>
@@ -179,47 +215,49 @@ export default function ChoirScreen({ navigation }) {
             <Text style={styles.headerSubtitle}>Join our community discussion boards</Text>
           </LinearGradient>
 
-          {/* Forum Selection */}
-          <View style={styles.forumSelectionContainer}>
-            <Text style={styles.forumSelectionTitle}>Choose Your Forum</Text>
-            {forums.map((forum) => (
-              <TouchableOpacity
-                key={forum.id}
-                style={[
-                  styles.forumCard,
-                  selectedForum === forum.id && styles.selectedForumCard
-                ]}
-                onPress={() => setSelectedForum(forum.id)}
-              >
-                <View style={styles.forumCardContent}>
-                  <MaterialCommunityIcons 
-                    name={forum.icon} 
-                    size={32} 
-                    color={selectedForum === forum.id ? "#fff" : "#8B1538"} 
-                  />
-                  <View style={styles.forumTextContainer}>
-                    <Text style={[
-                      styles.forumName,
-                      selectedForum === forum.id && styles.selectedForumText
-                    ]}>
-                      {forum.name}
-                    </Text>
-                    <Text style={[
-                      styles.forumDescription,
-                      selectedForum === forum.id && styles.selectedForumDescText
-                    ]}>
-                      {forum.description}
-                    </Text>
+          {/* Forum Selection - Only show if not pre-selected */}
+          {!route?.params?.forumId && (
+            <View style={styles.forumSelectionContainer}>
+              <Text style={styles.forumSelectionTitle}>Choose Your Forum</Text>
+              {forums.map((forum) => (
+                <TouchableOpacity
+                  key={forum.id}
+                  style={[
+                    styles.forumCard,
+                    selectedForum === forum.id && styles.selectedForumCard
+                  ]}
+                  onPress={() => setSelectedForum(forum.id)}
+                >
+                  <View style={styles.forumCardContent}>
+                    <MaterialCommunityIcons 
+                      name={forum.icon} 
+                      size={32} 
+                      color={selectedForum === forum.id ? "#fff" : "#8B1538"} 
+                    />
+                    <View style={styles.forumTextContainer}>
+                      <Text style={[
+                        styles.forumName,
+                        selectedForum === forum.id && styles.selectedForumText
+                      ]}>
+                        {forum.name}
+                      </Text>
+                      <Text style={[
+                        styles.forumDescription,
+                        selectedForum === forum.id && styles.selectedForumDescText
+                      ]}>
+                        {forum.description}
+                      </Text>
+                    </View>
+                    <MaterialCommunityIcons 
+                      name={selectedForum === forum.id ? "check-circle" : "circle-outline"} 
+                      size={24} 
+                      color={selectedForum === forum.id ? "#fff" : "#8B1538"} 
+                    />
                   </View>
-                  <MaterialCommunityIcons 
-                    name={selectedForum === forum.id ? "check-circle" : "circle-outline"} 
-                    size={24} 
-                    color={selectedForum === forum.id ? "#fff" : "#8B1538"} 
-                  />
-                </View>
-              </TouchableOpacity>
-            ))}
-          </View>
+                </TouchableOpacity>
+              ))}
+            </View>
+          )}
 
           {/* Login Form */}
           <View style={styles.formContainer}>

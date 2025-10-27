@@ -9,6 +9,7 @@ import {
   TouchableOpacity,
   Image
 } from 'react-native';
+import { LinearGradient } from 'expo-linear-gradient';
 import Header from '../components/Header';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 
@@ -138,30 +139,62 @@ export default function EventsScreen() {
           onBack={() => {}}
         />
         
-        {/* Timer Display - Countdown to next event */}
-        <View style={styles.timerContainer}>
-          <View style={styles.timerDisplay}>
-            <Text style={styles.timerText}>{formatTime(timeRemaining)}</Text>
-          </View>
-          <Text style={styles.timerLabel}>
-            {timeRemaining.expired ? 'Venda Great Revival' : 'Until Venda Great Revival'}
-          </Text>
-        </View>
-        
         <ScrollView style={styles.scrollView} showsVerticalScrollIndicator={false}>
+          {/* Hero Section with Gradient */}
+          <LinearGradient
+            colors={['#8B1538', '#A61B46', '#C02454']}
+            style={styles.heroSection}
+          >
+            <MaterialCommunityIcons name="calendar-star" size={64} color="#fff" />
+            <Text style={styles.heroTitle}>AFMA Events</Text>
+            <Text style={styles.heroSubtitle}>Experience faith-filled gatherings and celebrations</Text>
+          </LinearGradient>
+
+          {/* Next Event Card with Countdown */}
+          <View style={styles.featuredEventCard}>
+            <View style={styles.featuredBadge}>
+              <MaterialCommunityIcons name="star" size={16} color="#fff" />
+              <Text style={styles.featuredText}>FEATURED EVENT</Text>
+            </View>
+            <Text style={styles.featuredEventTitle}>Venda Great Revival</Text>
+            <Text style={styles.featuredEventDate}>18 - 21 September 2025</Text>
+            
+            {/* Countdown Timer */}
+            <View style={styles.countdownContainer}>
+              <Text style={styles.countdownLabel}>Countdown</Text>
+              <View style={styles.timerDisplay}>
+                <Text style={styles.timerText}>{formatTime(timeRemaining)}</Text>
+              </View>
+            </View>
+
+            <TouchableOpacity style={styles.learnMoreButton}>
+              <Text style={styles.learnMoreText}>Learn More</Text>
+              <MaterialCommunityIcons name="arrow-right" size={20} color="#8B1538" />
+            </TouchableOpacity>
+          </View>
+
           <View style={styles.body}>
-            {/* Forthcoming Events Title */}
-            <Text style={styles.sectionTitle}>Forthcoming Events</Text>
+            {/* Upcoming Events Section */}
+            <View style={styles.sectionHeader}>
+              <MaterialCommunityIcons name="calendar-clock" size={28} color="#8B1538" />
+              <Text style={styles.sectionTitle}>Upcoming Events</Text>
+            </View>
             
             {/* Next Event Banner */}
             <View style={styles.nextEventBanner}>
-              <Text style={styles.nextLabel}>NEXT</Text>
-              <Text style={styles.nextEventTitle}>The Annual Campmeeting 2025 - 26</Text>
+              <MaterialCommunityIcons name="calendar-check" size={24} color="#8B1538" />
+              <View style={styles.nextEventContent}>
+                <Text style={styles.nextLabel}>NEXT</Text>
+                <Text style={styles.nextEventTitle}>The Annual Campmeeting 2025 - 26</Text>
+              </View>
             </View>
             
             {/* Select Criteria Section */}
             <View style={styles.criteriaSection}>
-              <Text style={styles.criteriaTitle}>Select Criteria</Text>
+              <View style={styles.criteriaTitleRow}>
+                <MaterialCommunityIcons name="filter-variant" size={24} color="#8B1538" />
+                <Text style={styles.criteriaTitle}>Filter by Category</Text>
+              </View>
               <View style={styles.criteriaGrid}>
                 {eventCategories.map((category, index) => (
                   <TouchableOpacity 
@@ -190,36 +223,36 @@ export default function EventsScreen() {
             
             {/* Event Checkboxes */}
             <View style={styles.eventsContainer}>
+              <View style={styles.eventsHeader}>
+                <MaterialCommunityIcons name="format-list-checks" size={24} color="#8B1538" />
+                <Text style={styles.eventsHeaderText}>Select Events to Attend</Text>
+              </View>
               {filteredEvents.map((event, index) => (
-                <View key={event.id} style={styles.eventItem}>
-                  <TouchableOpacity 
-                    style={[
+                <TouchableOpacity 
+                  key={event.id} 
+                  style={styles.eventCard}
+                  onPress={() => toggleEventSelection(event.id)}
+                >
+                  <View style={styles.eventCardLeft}>
+                    <View style={[
                       styles.checkbox,
                       selectedEvents.includes(event.id) && styles.checkboxSelected
-                    ]}
-                    onPress={() => toggleEventSelection(event.id)}
-                  >
-                    {selectedEvents.includes(event.id) && (
-                      <MaterialCommunityIcons name="check" size={16} color="#fff" />
-                    )}
-                  </TouchableOpacity>
-                  <View style={styles.eventContent}>
-                    <Text style={styles.eventTitle}>{event.title}</Text>
-                    <Text style={styles.eventSubtitle}>{event.subtitle}</Text>
+                    ]}>
+                      {selectedEvents.includes(event.id) && (
+                        <MaterialCommunityIcons name="check" size={18} color="#fff" />
+                      )}
+                    </View>
+                    <View style={styles.eventContent}>
+                      <Text style={styles.eventTitle}>{event.title}</Text>
+                      <Text style={styles.eventSubtitle}>{event.subtitle}</Text>
+                      <View style={styles.categoryBadge}>
+                        <MaterialCommunityIcons name="tag" size={14} color="#8B1538" />
+                        <Text style={styles.categoryBadgeText}>{event.category}</Text>
+                      </View>
+                    </View>
                   </View>
-                </View>
-              ))}
-              
-              {/* Additional empty checkboxes as shown in screenshot */}
-              {[...Array(6)].map((_, index) => (
-                <View key={`empty-${index}`} style={styles.eventItem}>
-                  <TouchableOpacity style={styles.checkbox}>
-                    <View style={styles.checkboxInner} />
-                  </TouchableOpacity>
-                  <View style={styles.eventContent}>
-                    <View style={styles.emptyLine} />
-                  </View>
-                </View>
+                  <MaterialCommunityIcons name="chevron-right" size={24} color="#ccc" />
+                </TouchableOpacity>
               ))}
             </View>
           </View>
@@ -241,60 +274,168 @@ const styles = StyleSheet.create({
   scrollView: {
     flex: 1,
   },
-  timerContainer: {
+  heroSection: {
+    margin: width * 0.04,
+    marginTop: width * 0.02,
+    padding: width * 0.06,
+    borderRadius: 20,
     alignItems: 'center',
-    paddingVertical: height * 0.02,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 8,
+    elevation: 8,
+  },
+  heroTitle: {
+    fontSize: width * 0.06,
+    fontWeight: 'bold',
+    color: '#fff',
+    marginTop: 12,
+    textAlign: 'center',
+  },
+  heroSubtitle: {
+    fontSize: width * 0.035,
+    color: '#fff',
+    marginTop: 8,
+    textAlign: 'center',
+    opacity: 0.95,
+  },
+  featuredEventCard: {
+    backgroundColor: '#fff',
+    margin: width * 0.04,
+    marginTop: 0,
+    padding: width * 0.05,
+    borderRadius: 20,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 3 },
+    shadowOpacity: 0.15,
+    shadowRadius: 6,
+    elevation: 5,
+    borderLeftWidth: 5,
+    borderLeftColor: '#8B1538',
+  },
+  featuredBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#8B1538',
+    alignSelf: 'flex-start',
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 15,
+    marginBottom: 12,
+  },
+  featuredText: {
+    color: '#fff',
+    fontSize: width * 0.03,
+    fontWeight: 'bold',
+    marginLeft: 5,
+  },
+  featuredEventTitle: {
+    fontSize: width * 0.055,
+    fontWeight: 'bold',
+    color: '#333',
+    marginBottom: 5,
+  },
+  featuredEventDate: {
+    fontSize: width * 0.04,
+    color: '#666',
+    marginBottom: 15,
+  },
+  countdownContainer: {
+    alignItems: 'center',
+    paddingVertical: 15,
+    backgroundColor: '#f8f8f8',
+    borderRadius: 12,
+    marginBottom: 15,
+  },
+  countdownLabel: {
+    fontSize: width * 0.035,
+    color: '#666',
+    marginBottom: 8,
+    fontWeight: '600',
   },
   timerDisplay: {
     backgroundColor: '#000',
-    paddingVertical: height * 0.015,
-    paddingHorizontal: width * 0.08,
+    paddingVertical: 12,
+    paddingHorizontal: 20,
     borderRadius: 8,
-    marginBottom: height * 0.008,
   },
   timerText: {
     color: '#fff',
-    fontSize: Math.min(width * 0.06, 24),
+    fontSize: width * 0.05,
     fontWeight: '800',
     fontFamily: 'monospace',
     textAlign: 'center',
   },
-  timerLabel: {
-    fontSize: Math.min(width * 0.032, 13),
-    color: '#666',
-    fontWeight: '500',
-    textAlign: 'center',
+  learnMoreButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: '#f8f8f8',
+    paddingVertical: 12,
+    borderRadius: 10,
+    borderWidth: 1,
+    borderColor: '#8B1538',
+  },
+  learnMoreText: {
+    color: '#8B1538',
+    fontSize: width * 0.04,
+    fontWeight: '600',
+    marginRight: 5,
   },
   body: { 
     padding: width * 0.04,
+    paddingTop: 0,
     paddingBottom: height * 0.03,
   },
+  sectionHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 15,
+  },
   sectionTitle: {
-    fontSize: Math.min(width * 0.055, 22),
-    fontWeight: '800',
-    color: '#8B1538',
-    marginBottom: height * 0.02,
+    fontSize: width * 0.05,
+    fontWeight: 'bold',
+    color: '#333',
+    marginLeft: 10,
   },
   nextEventBanner: {
     flexDirection: 'row',
     alignItems: 'center',
+    backgroundColor: '#fff',
+    padding: width * 0.04,
+    borderRadius: 15,
     marginBottom: height * 0.025,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 3,
+  },
+  nextEventContent: {
+    flex: 1,
+    marginLeft: 12,
   },
   nextLabel: {
     backgroundColor: '#8B1538',
     color: '#fff',
-    paddingHorizontal: width * 0.04,
-    paddingVertical: height * 0.008,
-    borderRadius: 20,
-    fontSize: Math.min(width * 0.03, 12),
-    fontWeight: '700',
-    marginRight: width * 0.03,
+    paddingHorizontal: 8,
+    paddingVertical: 3,
+    borderRadius: 12,
+    fontSize: width * 0.028,
+    fontWeight: 'bold',
+    alignSelf: 'flex-start',
+    marginBottom: 5,
   },
   nextEventTitle: {
-    fontSize: Math.min(width * 0.04, 16),
+    fontSize: width * 0.04,
     fontWeight: '600',
     color: '#333',
-    flex: 1,
+  },
+  criteriaTitleRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 15,
   },
   criteriaSection: {
     backgroundColor: '#fff',
@@ -354,20 +495,40 @@ const styles = StyleSheet.create({
     shadowRadius: 4,
     elevation: 3,
   },
-  eventItem: {
+  eventsHeader: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingVertical: height * 0.012,
+    marginBottom: 15,
+    paddingBottom: 10,
+    borderBottomWidth: 2,
+    borderBottomColor: '#f0f0f0',
+  },
+  eventsHeaderText: {
+    fontSize: width * 0.045,
+    fontWeight: 'bold',
+    color: '#333',
+    marginLeft: 10,
+  },
+  eventCard: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingVertical: 12,
     borderBottomWidth: 1,
-    borderBottomColor: '#8B1538',
+    borderBottomColor: '#f0f0f0',
+  },
+  eventCardLeft: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    flex: 1,
   },
   checkbox: {
-    width: Math.min(width * 0.05, 20),
-    height: Math.min(width * 0.05, 20),
+    width: 24,
+    height: 24,
     borderWidth: 2,
     borderColor: '#8B1538',
-    borderRadius: 3,
-    marginRight: width * 0.03,
+    borderRadius: 6,
+    marginRight: 12,
     alignItems: 'center',
     justifyContent: 'center',
     backgroundColor: '#fff',
@@ -375,29 +536,33 @@ const styles = StyleSheet.create({
   checkboxSelected: {
     backgroundColor: '#8B1538',
   },
-  checkboxInner: {
-    width: Math.min(width * 0.025, 10),
-    height: Math.min(width * 0.025, 10),
-    backgroundColor: 'transparent',
-    borderRadius: 1,
-  },
   eventContent: {
     flex: 1,
   },
   eventTitle: {
-    fontSize: Math.min(width * 0.038, 15),
+    fontSize: width * 0.04,
     fontWeight: '600',
     color: '#333',
-    textDecorationLine: 'underline',
+    marginBottom: 3,
   },
   eventSubtitle: {
-    fontSize: Math.min(width * 0.032, 13),
+    fontSize: width * 0.035,
     color: '#666',
-    marginTop: height * 0.002,
+    marginBottom: 5,
   },
-  emptyLine: {
-    height: 1,
-    backgroundColor: '#8B1538',
-    flex: 1,
+  categoryBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#f8f8f8',
+    paddingHorizontal: 8,
+    paddingVertical: 3,
+    borderRadius: 10,
+    alignSelf: 'flex-start',
+  },
+  categoryBadgeText: {
+    fontSize: width * 0.03,
+    color: '#8B1538',
+    marginLeft: 4,
+    fontWeight: '500',
   },
 });

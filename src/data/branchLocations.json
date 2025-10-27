@@ -3,43 +3,53 @@
     {
       "id": "headquarters",
       "name": "Headquarters",
+      "coords": { "lat": -26.2041, "lng": 28.0473 },
       "cities": []
     },
     {
       "id": "australia",
       "name": "Australia",
+      "coords": { "lat": -25.2744, "lng": 133.7751 },
       "cities": []
     },
     {
       "id": "botswana",
       "name": "Botswana",
+      "coords": { "lat": -22.3285, "lng": 24.6849 },
       "cities": [
         {
           "name": "Gaborone",
+          "coords": { "lat": -24.6282, "lng": 25.9231 },
           "branches": []
         },
         {
           "name": "Mochudi",
+          "coords": { "lat": -24.4167, "lng": 26.15 },
           "branches": []
         },
         {
           "name": "Tate Siding",
+          "coords": { "lat": -24.4, "lng": 25.95 },
           "branches": []
         },
         {
           "name": "Francistown",
+          "coords": { "lat": -21.1707, "lng": 27.5089 },
           "branches": []
         },
         {
           "name": "Mahalapye",
+          "coords": { "lat": -23.1, "lng": 26.8167 },
           "branches": []
         },
         {
           "name": "Palapye",
+          "coords": { "lat": -22.5453, "lng": 27.1254 },
           "branches": []
         },
         {
           "name": "Maun",
+          "coords": { "lat": -19.9906, "lng": 23.4162 },
           "branches": []
         }
       ]
@@ -47,91 +57,113 @@
     {
       "id": "south_africa",
       "name": "South Africa",
+      "coords": { "lat": -30.5595, "lng": 22.9375 },
       "cities": [
         {
           "name": "Johannesburg",
+          "coords": { "lat": -26.2041, "lng": 28.0473 },
           "branches": [
             {
               "name": "Pimville",
-              "address": "Mhlwathi street, Pimville Zone 1, Johannesburg"
+              "address": "Mhlwathi street, Pimville Zone 1, Johannesburg",
+              "coords": { "lat": -26.2733, "lng": 27.8892 }
             },
             {
               "name": "Alexandra",
-              "address": "San Kopano hall, Alexandra"
+              "address": "San Kopano hall, Alexandra",
+              "coords": { "lat": -26.1028, "lng": 28.0989 }
             },
             {
               "name": "Kagiso",
-              "address": ""
+              "address": "",
+              "coords": { "lat": -26.0667, "lng": 27.7833 }
             },
             {
               "name": "Thembisa",
-              "address": ""
+              "address": "",
+              "coords": { "lat": -25.995, "lng": 28.2233 }
             },
             {
               "name": "Vosloorus",
-              "address": ""
+              "address": "",
+              "coords": { "lat": -26.3433, "lng": 28.1789 }
             },
             {
               "name": "Diepsloot",
-              "address": ""
+              "address": "",
+              "coords": { "lat": -25.9333, "lng": 28.0167 }
             },
             {
               "name": "Ennerdale",
-              "address": ""
+              "address": "",
+              "coords": { "lat": -26.3333, "lng": 27.85 }
             }
           ]
         },
         {
           "name": "Pretoria",
+          "coords": { "lat": -25.7479, "lng": 28.2293 },
           "branches": [
             {
               "name": "Soshanguve",
-              "address": ""
+              "address": "",
+              "coords": { "lat": -25.4833, "lng": 28.0833 }
             },
             {
               "name": "Mamelodi",
-              "address": ""
+              "address": "",
+              "coords": { "lat": -25.7167, "lng": 28.3833 }
             }
           ]
         },
         {
           "name": "Durban",
+          "coords": { "lat": -29.8587, "lng": 31.0218 },
           "branches": []
         },
         {
           "name": "Cape Town",
+          "coords": { "lat": -33.9249, "lng": 18.4241 },
           "branches": []
         },
         {
           "name": "Venda",
+          "coords": { "lat": -22.9467, "lng": 30.4469 },
           "branches": []
         },
         {
           "name": "Polokwane",
+          "coords": { "lat": -23.9045, "lng": 29.4689 },
           "branches": []
         },
         {
           "name": "Pietermaritzburg",
+          "coords": { "lat": -29.6197, "lng": 30.3925 },
           "branches": []
         },
         {
           "name": "East London",
+          "coords": { "lat": -33.0153, "lng": 27.9116 },
           "branches": []
         },
         {
           "name": "Port Elizabeth",
+          "coords": { "lat": -33.9608, "lng": 25.6022 },
           "branches": []
         },
         {
           "name": "Mkhuhlu",
+          "coords": { "lat": -24.9667, "lng": 31.3833 },
           "branches": []
         },
         {
           "name": "Newcastle",
+          "coords": { "lat": -27.7577, "lng": 29.9321 },
           "branches": []
         },
         {
           "name": "Umhlabauyalingana",
+          "coords": { "lat": -27.0167, "lng": 32.7833 },
           "branches": []
         }
       ]
@@ -139,19 +171,23 @@
     {
       "id": "namibia",
       "name": "Namibia",
+      "coords": { "lat": -22.9576, "lng": 18.4904 },
       "cities": []
     },
     {
       "id": "mozambique",
       "name": "Mozambique",
+      "coords": { "lat": -18.6657, "lng": 35.5296 },
       "cities": []
     },
     {
       "id": "zambia",
       "name": "Zambia",
+      "coords": { "lat": -13.1339, "lng": 27.8493 },
       "cities": [
         {
           "name": "Lusaka",
+          "coords": { "lat": -15.3875, "lng": 28.3228 },
           "branches": []
         }
       ]
@@ -159,9 +195,11 @@
     {
       "id": "malawi",
       "name": "Malawi",
+      "coords": { "lat": -13.2543, "lng": 34.3015 },
       "cities": [
         {
           "name": "Lilongwe",
+          "coords": { "lat": -13.9626, "lng": 33.7741 },
           "branches": []
         }
       ]
@@ -169,69 +207,86 @@
     {
       "id": "zimbabwe",
       "name": "Zimbabwe",
+      "coords": { "lat": -19.0154, "lng": 29.1549 },
       "cities": [
         {
           "name": "Harare",
+          "coords": { "lat": -17.8252, "lng": 31.0335 },
           "branches": []
         },
         {
           "name": "Gweru",
+          "coords": { "lat": -19.45, "lng": 29.8167 },
           "branches": []
         },
         {
           "name": "Mutare",
+          "coords": { "lat": -18.9707, "lng": 32.6704 },
           "branches": []
         },
         {
           "name": "Victoria Falls",
+          "coords": { "lat": -17.9243, "lng": 25.8567 },
           "branches": []
         },
         {
           "name": "Kwekwe",
+          "coords": { "lat": -18.9286, "lng": 29.8147 },
           "branches": []
         },
         {
           "name": "Kadoma",
+          "coords": { "lat": -18.3333, "lng": 29.9167 },
           "branches": []
         },
         {
           "name": "Norton",
+          "coords": { "lat": -17.8833, "lng": 30.7 },
           "branches": []
         },
         {
           "name": "Masvingo",
+          "coords": { "lat": -20.0638, "lng": 30.8277 },
           "branches": []
         },
         {
           "name": "Beitbridge",
+          "coords": { "lat": -22.2167, "lng": 30.0 },
           "branches": []
         },
         {
           "name": "Chiredzi",
+          "coords": { "lat": -21.05, "lng": 31.6667 },
           "branches": []
         },
         {
           "name": "Chikombedzi",
+          "coords": { "lat": -21.2, "lng": 31.65 },
           "branches": []
         },
         {
           "name": "Chinhoyi",
+          "coords": { "lat": -17.3667, "lng": 30.2 },
           "branches": []
         },
         {
           "name": "Hwange",
+          "coords": { "lat": -18.3644, "lng": 26.5 },
           "branches": []
         },
         {
           "name": "Kariba",
+          "coords": { "lat": -16.5167, "lng": 28.8 },
           "branches": []
         },
         {
           "name": "Plum Tree",
+          "coords": { "lat": -20.4833, "lng": 28.7833 },
           "branches": []
         },
         {
           "name": "Gwanda",
+          "coords": { "lat": -20.9333, "lng": 29.0 },
           "branches": []
         }
       ]
@@ -239,17 +294,21 @@
     {
       "id": "united_kingdom",
       "name": "United Kingdom",
+      "coords": { "lat": 55.3781, "lng": -3.436 },
       "cities": [
         {
           "name": "England",
+          "coords": { "lat": 52.3555, "lng": -1.1743 },
           "branches": [
             {
               "name": "Manchester",
-              "address": ""
+              "address": "",
+              "coords": { "lat": 53.4808, "lng": -2.2426 }
             },
             {
               "name": "Bradford",
-              "address": ""
+              "address": "",
+              "coords": { "lat": 53.7960, "lng": -1.7594 }
             }
           ]
         }
@@ -258,6 +317,7 @@
     {
       "id": "united_arab_emirates",
       "name": "United Arab Emirates",
+      "coords": { "lat": 23.4241, "lng": 53.8478 },
       "cities": []
     }
   ]

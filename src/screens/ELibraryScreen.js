@@ -1,8 +1,9 @@
 import React, { useState } from 'react';
-import { View, StyleSheet, Text, Dimensions, SafeAreaView, ScrollView, TouchableOpacity, Image, Alert, Platform } from 'react-native';
+import { View, StyleSheet, Text, Dimensions, ScrollView, TouchableOpacity, Image, Alert, Platform } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import Header from '../components/Header';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
-import * as FileSystem from 'expo-file-system';
+import * as FileSystem from 'expo-file-system/legacy';
 import * as Sharing from 'expo-sharing';
 import * as DocumentPicker from 'expo-document-picker';
 import { Asset } from 'expo-asset';
@@ -12,38 +13,37 @@ const { width, height } = Dimensions.get('window');
 export default function ELibraryScreen({ navigation }) {
   const [downloading, setDownloading] = useState({});
 
-  // PDF files configuration - you can add your actual PDF URLs or local files here
+  // PDF files configuration - All testimonies now use local assets
   const pdfFiles = {
     mjkSengwayo: {
       title: "Rev MJK Sengwayo Testimony",
       filename: "rev-mjk-sengwayo-testimony.pdf",
-      url: null, // We'll use local file instead
-      localAsset: true, // Flag to indicate this is a local asset
+      localAsset: true,
       assetModule: require('../../assets/pdfs/testimonies/rev-mjk-sengwayo-testimony.pdf')
     },
     pmSibanda: {
       title: "Rev PM Sibanda Testimony", 
-      filename: "rev-pm-sibanda-testimony.pdf",
-      url: "https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf", // Replace with actual URL
-      localAsset: false
+      filename: "rev-p-sibanda-testimony.pdf",
+      localAsset: true,
+      assetModule: require('../../assets/pdfs/testimonies/rev-p-sibanda-testimony.pdf')
     },
     tTshuma: {
       title: "Rev T Tshuma Testimony",
       filename: "rev-t-tshuma-testimony.pdf", 
-      url: "https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf", // Replace with actual URL
-      localAsset: false
+      localAsset: true,
+      assetModule: require('../../assets/pdfs/testimonies/rev-t-tshuma-testimony.pdf')
     },
     rZulu: {
       title: "Rev R Zulu Biography",
       filename: "rev-r-zulu-biography.pdf",
-      url: "https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf", // Replace with actual URL  
-      localAsset: false
+      localAsset: false,
+      url: "https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf" // Placeholder until actual PDF is added
     },
     urgentMessage: {
       title: "Urgent Message",
       filename: "urgent-message.pdf",
-      url: "https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf", // Replace with actual URL
-      localAsset: false
+      localAsset: false,
+      url: "https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf" // Placeholder until actual PDF is added
     }
   };
 
@@ -55,8 +55,22 @@ export default function ELibraryScreen({ navigation }) {
   };
 
   const downloadPDF = async (pdfKey) => {
-    // For themed PDF experience, navigate to PDF viewer
-    openPDFViewer(pdfKey);
+    // Ask user if they want to view or download
+    const pdfInfo = pdfFiles[pdfKey];
+    if (!pdfInfo) {
+      Alert.alert('Error', 'PDF file not found');
+      return;
+    }
+
+    Alert.alert(
+      'PDF Options',
+      `What would you like to do with "${pdfInfo.title}"?`,
+      [
+        { text: 'Cancel', style: 'cancel' },
+        { text: 'View', onPress: () => openPDFViewer(pdfKey) },
+        { text: 'Download', onPress: () => actuallyDownloadPDF(pdfKey) }
+      ]
+    );
     return;
 
     // Original download logic (commented out for now)
@@ -145,6 +159,86 @@ export default function ELibraryScreen({ navigation }) {
       setDownloading(prev => ({ ...prev, [pdfKey]: false }));
     }
     */
+  };
+
+  // New function to actually download PDFs to device
+  const actuallyDownloadPDF = async (pdfKey) => {
+    try {
+      setDownloading(prev => ({ ...prev, [pdfKey]: true }));
+      
+      const pdfInfo = pdfFiles[pdfKey];
+      if (!pdfInfo) {
+        Alert.alert('Error', 'PDF file not found');
+        return;
+      }
+
+      // Handle local asset files
+      if (pdfInfo.localAsset) {
+        try {
+          // Load the asset
+          const asset = Asset.fromModule(pdfInfo.assetModule);
+          await asset.downloadAsync();
+          
+          // Get the local URI of the asset
+          const assetUri = asset.localUri || asset.uri;
+          
+          if (assetUri) {
+            // Create downloads directory
+            const downloadDir = FileSystem.documentDirectory + 'downloads/';
+            const dirInfo = await FileSystem.getInfoAsync(downloadDir);
+            if (!dirInfo.exists) {
+              await FileSystem.makeDirectoryAsync(downloadDir, { intermediates: true });
+            }
+            
+            const localUri = downloadDir + pdfInfo.filename;
+            
+            // Check if file already exists
+            const fileInfo = await FileSystem.getInfoAsync(localUri);
+            if (fileInfo.exists) {
+              Alert.alert(
+                'File Already Downloaded',
+                `${pdfInfo.title} is already in your downloads.`,
+                [
+                  { text: 'OK' },
+                  { text: 'Share Again', onPress: () => sharePDF(localUri, pdfInfo.title) }
+                ]
+              );
+              return;
+            }
+            
+            // Copy the asset to the downloads directory
+            await FileSystem.copyAsync({
+              from: assetUri,
+              to: localUri
+            });
+            
+            // Success - Show download complete and share
+            Alert.alert(
+              'Download Complete!',
+              `${pdfInfo.title} has been downloaded to your device.`,
+              [
+                { text: 'OK' },
+                { text: 'Open Now', onPress: () => sharePDF(localUri, pdfInfo.title) }
+              ]
+            );
+            
+          } else {
+            Alert.alert('Error', 'Could not access PDF file');
+          }
+        } catch (error) {
+          console.error('Asset loading error:', error);
+          Alert.alert('Error', `Failed to download ${pdfInfo.title}: ${error.message}`);
+        }
+      } else {
+        // Handle remote URL files (existing logic for non-local assets)
+        Alert.alert('Info', 'This PDF is not available for download yet. Please contact the administrator.');
+      }
+    } catch (error) {
+      console.error('Download error:', error);
+      Alert.alert('Error', 'Download failed. Please try again.');
+    } finally {
+      setDownloading(prev => ({ ...prev, [pdfKey]: false }));
+    }
   };
 
   const handleLocalAssetPDF = async (pdfInfo) => {

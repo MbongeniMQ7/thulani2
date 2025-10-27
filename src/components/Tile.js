@@ -23,7 +23,8 @@ const styles = StyleSheet.create({
     borderRadius: 20,
     padding: width * 0.04,
     margin: width * 0.02,
-    borderWidth: 2,
+    alignItems: 'center',
+    justifyContent: 'center',
     shadowColor: '#000',
     shadowOpacity: 0.15,
     shadowRadius: 15,
@@ -50,5 +51,6 @@ const styles = StyleSheet.create({
     color: '#8B1538',
     lineHeight: Math.min(width * 0.045, 18),
     flexWrap: 'wrap',
+    textAlign: 'center',
   }
 });

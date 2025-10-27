@@ -1,7 +1,7 @@
 {
   "expo": {
-    "name": "afma-app",
-    "slug": "afma-app",
+    "name": "AFMA",
+    "slug": "afma",
     "version": "1.0.0",
     "sdkVersion": "54.0.0",
     "orientation": "portrait",
@@ -11,23 +11,41 @@
     "splash": {
       "image": "./assets/splash-icon.png",
       "resizeMode": "contain",
-      "backgroundColor": "#ffffff"
+      "backgroundColor": "#8B1538"
     },
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": true,
+      "config": {
+        "googleMapsApiKey": "YOUR_GOOGLE_MAPS_API_KEY"
+      }
     },
     "android": {
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
-        "backgroundColor": "#ffffff"
+        "backgroundColor": "#8B1538"
       },
-      "edgeToEdgeEnabled": true
+      "edgeToEdgeEnabled": true,
+      "package": "com.afma.app",
+      "versionCode": 1,
+      "config": {
+        "googleMaps": {
+          "apiKey": "YOUR_GOOGLE_MAPS_API_KEY"
+        }
+      }
     },
     "web": {
       "favicon": "./assets/favicon.png"
     },
     "plugins": [
-      "expo-asset"
-    ]
+      "expo-asset",
+      "expo-mail-composer",
+      "expo-font"
+    ],
+    "extra": {
+      "eas": {
+        "projectId": "bdd4d07f-9317-4e33-9bb3-4ae4eeccad51"
+      }
+    },
+    "owner": "mmqtechdev"
   }
 }

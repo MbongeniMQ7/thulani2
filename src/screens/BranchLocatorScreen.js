@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useState, useRef } from 'react';
 import {
   View,
   StyleSheet,
@@ -13,11 +13,12 @@ import {
   Linking,
   Alert,
 } from 'react-native';
+import MapView, { Marker, PROVIDER_GOOGLE } from 'react-native-maps';
 import Header from '../components/Header';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import branchLocations from '../data/branchLocations.json';
 
-const { width } = Dimensions.get('window');
+const { width, height } = Dimensions.get('window');
 
 // Optional: local fallback so the UI still works if the fetch fails
 const sampleData = {
@@ -77,9 +78,12 @@ export default function BranchLocatorScreen({ navigation }) {
 
   const [selectedCountry, setSelectedCountry] = useState('');
   const [selectedCity, setSelectedCity] = useState('');
+  const [selectedBranch, setSelectedBranch] = useState(null);
 
   const [showCountryPicker, setShowCountryPicker] = useState(false);
   const [showCityPicker, setShowCityPicker] = useState(false);
+  
+  const mapRef = useRef(null);
 
   useEffect(() => {
   let isMounted = true;
@@ -116,6 +120,118 @@ export default function BranchLocatorScreen({ navigation }) {
     () => filteredCities.find((c) => c.name === selectedCity),
     [filteredCities, selectedCity]
   );
+
+  // Get all markers for the map
+  const allMarkers = useMemo(() => {
+    const markers = [];
+    
+    countries.forEach(country => {
+      country.cities?.forEach(city => {
+        if (city.branches && city.branches.length > 0) {
+          // Add markers for each branch
+          city.branches.forEach(branch => {
+            if (branch.coords) {
+              markers.push({
+                id: `${country.id}-${city.name}-${branch.name}`,
+                coordinate: {
+                  latitude: branch.coords.lat,
+                  longitude: branch.coords.lng,
+                },
+                title: branch.name,
+                description: `${city.name}, ${country.name}`,
+                address: branch.address,
+                phone: branch.phone,
+                type: 'branch',
+                countryId: country.id,
+                cityName: city.name,
+              });
+            }
+          });
+        } else if (city.coords) {
+          // Add marker for city if no branches
+          markers.push({
+            id: `${country.id}-${city.name}`,
+            coordinate: {
+              latitude: city.coords.lat,
+              longitude: city.coords.lng,
+            },
+            title: city.name,
+            description: `${country.name}`,
+            type: 'city',
+            countryId: country.id,
+            cityName: city.name,
+          });
+        }
+      });
+    });
+    
+    return markers;
+  }, [countries]);
+
+  // Filter markers based on selection
+  const visibleMarkers = useMemo(() => {
+    if (!selectedCountry) return allMarkers;
+    
+    let filtered = allMarkers.filter(m => m.countryId === selectedCountry);
+    
+    if (selectedCity) {
+      filtered = filtered.filter(m => m.cityName === selectedCity);
+    }
+    
+    return filtered;
+  }, [allMarkers, selectedCountry, selectedCity]);
+
+  // Calculate map region
+  const mapRegion = useMemo(() => {
+    if (visibleMarkers.length === 0) {
+      // Default to Africa view
+      return {
+        latitude: -15.0,
+        longitude: 25.0,
+        latitudeDelta: 50,
+        longitudeDelta: 50,
+      };
+    }
+
+    if (visibleMarkers.length === 1) {
+      return {
+        latitude: visibleMarkers[0].coordinate.latitude,
+        longitude: visibleMarkers[0].coordinate.longitude,
+        latitudeDelta: 0.5,
+        longitudeDelta: 0.5,
+      };
+    }
+
+    // Calculate bounds for multiple markers
+    const lats = visibleMarkers.map(m => m.coordinate.latitude);
+    const lngs = visibleMarkers.map(m => m.coordinate.longitude);
+    
+    const minLat = Math.min(...lats);
+    const maxLat = Math.max(...lats);
+    const minLng = Math.min(...lngs);
+    const maxLng = Math.max(...lngs);
+    
+    const centerLat = (minLat + maxLat) / 2;
+    const centerLng = (minLng + maxLng) / 2;
+    const deltaLat = (maxLat - minLat) * 1.5; // Add padding
+    const deltaLng = (maxLng - minLng) * 1.5;
+    
+    return {
+      latitude: centerLat,
+      longitude: centerLng,
+      latitudeDelta: Math.max(deltaLat, 0.5),
+      longitudeDelta: Math.max(deltaLng, 0.5),
+    };
+  }, [visibleMarkers]);
+
+  // Update map when region changes
+  useEffect(() => {
+    if (mapRef.current && visibleMarkers.length > 0) {
+      setTimeout(() => {
+        mapRef.current?.animateToRegion(mapRegion, 1000);
+      }, 100);
+    }
+  }, [mapRegion]);
 
   const getSelectedCountryName = () => {
     const country = countries.find((c) => c.id === selectedCountry);
@@ -235,16 +351,46 @@ export default function BranchLocatorScreen({ navigation }) {
             </TouchableOpacity>
           </View>
 
-          {/* Map Section (placeholder) */}
+          {/* Map Section */}
           <View style={styles.mapContainer}>
-            <View style={styles.mapPlaceholder}>
-              <MaterialCommunityIcons name="map" size={width * 0.15} color="#8B1538" />
-              <Text style={styles.mapText}>Interactive Map</Text>
-              <Text style={styles.mapSubtext}>
-                {selectedCity
-                  ? `Showing location for ${selectedCity}`
-                  : 'Select a country and city to view location'}
-              </Text>
+            <MapView
+              ref={mapRef}
+              provider={PROVIDER_GOOGLE}
+              style={styles.map}
+              initialRegion={mapRegion}
+              showsUserLocation={true}
+              showsMyLocationButton={true}
+              showsCompass={true}
+              toolbarEnabled={true}
+            >
+              {visibleMarkers.map((marker) => (
+                <Marker
+                  key={marker.id}
+                  coordinate={marker.coordinate}
+                  title={marker.title}
+                  description={marker.description}
+                  pinColor={marker.type === 'branch' ? '#8B1538' : '#22C55E'}
+                  onPress={() => setSelectedBranch(marker)}
+                >
+                  <View style={styles.markerContainer}>
+                    <MaterialCommunityIcons 
+                      name={marker.type === 'branch' ? 'church' : 'map-marker'} 
+                      size={30} 
+                      color="#8B1538" 
+                    />
+                  </View>
+                </Marker>
+              ))}
+            </MapView>
+            
+            {/* Map overlay info */}
+            <View style={styles.mapOverlay}>
+              <View style={styles.mapInfoCard}>
+                <MaterialCommunityIcons name="map-marker-radius" size={20} color="#8B1538" />
+                <Text style={styles.mapInfoText}>
+                  {visibleMarkers.length} location{visibleMarkers.length !== 1 ? 's' : ''} shown
+                </Text>
+              </View>
             </View>
           </View>
 
@@ -440,19 +586,60 @@ const styles = StyleSheet.create({
   pickerDisabled: { opacity: 0.5 },
   pickerText: { color: 'white', fontWeight: '600' },
 
-  mapContainer: { marginTop: 20 },
-  mapPlaceholder: {
-    height: 180,
-    backgroundColor: '#FFF',
-    borderColor: '#EEE',
-    borderWidth: 1,
-    borderRadius: 12,
-    justifyContent: 'center',
-    alignItems: 'center',
-    gap: 4,
+  mapContainer: { 
+    marginTop: 20,
+    height: height * 0.45,
+    borderRadius: 16,
+    overflow: 'hidden',
+    borderWidth: 2,
+    borderColor: '#8B1538',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.2,
+    shadowRadius: 8,
+    elevation: 6,
   },
-  mapText: { fontWeight: '700', color: '#8B1538' },
-  mapSubtext: { color: '#666' },
+  map: {
+    width: '100%',
+    height: '100%',
+  },
+  mapOverlay: {
+    position: 'absolute',
+    top: 12,
+    left: 12,
+    right: 12,
+  },
+  mapInfoCard: {
+    backgroundColor: 'rgba(255, 255, 255, 0.95)',
+    borderRadius: 12,
+    paddingHorizontal: 16,
+    paddingVertical: 10,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.15,
+    shadowRadius: 4,
+    elevation: 4,
+  },
+  mapInfoText: {
+    color: '#1e293b',
+    fontWeight: '700',
+    fontSize: 14,
+  },
+  markerContainer: {
+    backgroundColor: 'rgba(255, 255, 255, 0.95)',
+    borderRadius: 20,
+    padding: 6,
+    borderWidth: 2,
+    borderColor: '#8B1538',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.25,
+    shadowRadius: 4,
+    elevation: 4,
+  },
 
   branchDetailsContainer: { marginTop: 24, marginBottom: 32 },
   branchDetailsTitle: { fontSize: 18, fontWeight: '700', color: '#222', marginBottom: 12 },

@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { View, StyleSheet, Text, Dimensions, SafeAreaView, TouchableOpacity, Alert, ScrollView } from 'react-native';
+import { View, StyleSheet, Text, Dimensions, TouchableOpacity, Alert, ScrollView } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import Header from '../components/Header';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
@@ -74,7 +75,7 @@ export default function AdminCodeManagement({ navigation }) {
           </LinearGradient>
 
           <View style={styles.codesContainer}>
-            {/* Overseer Code */}
+
             <View style={styles.codeCard}>
               <View style={styles.codeHeader}>
                 <MaterialCommunityIcons name="account-star" size={24} color="#8B1538" />
@@ -91,7 +92,7 @@ export default function AdminCodeManagement({ navigation }) {
               </View>
             </View>
 
-            {/* Pastor Code */}
+           
             <View style={styles.codeCard}>
               <View style={styles.codeHeader}>
                 <MaterialCommunityIcons name="account-tie" size={24} color="#8B1538" />

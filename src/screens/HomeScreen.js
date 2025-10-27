@@ -1,5 +1,6 @@
 import React from 'react';
-import { View, StyleSheet, ScrollView, Text, Dimensions, SafeAreaView, TouchableOpacity, Alert } from 'react-native';
+import { View, StyleSheet, ScrollView, Text, Dimensions, TouchableOpacity, Alert } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import Header from '../components/Header';
 import Tile from '../components/Tile';
@@ -32,9 +33,10 @@ export default function HomeScreen({ navigation }) {
           <Tile icon="play-circle" label="Media Centre" color="#8B1538" onPress={() => navigation.navigate('MediaCentre')} />
           <Tile icon="book" label="E - Library" color="#8B1538" onPress={() => navigation.navigate('E-Library')} />
           <Tile icon="chat" label="AFMA Chat" color="#8B1538" onPress={() => navigation.navigate('Chat')} />
+          <Tile icon="forum" label="Forums" color="#8B1538" onPress={() => navigation.navigate('Forums')} />
           <Tile icon="map-marker-radius" label="Branch Locator" color="#8B1538" onPress={() => navigation.navigate('BranchLocator')} />
-          <Tile icon="account-tie" label="Overseer E - Office" color="#8B1538" onPress={() => navigation.navigate('Queue')} />
-          <Tile icon="account" label="Pastor's E - Office" color="#8B1538" onPress={() => navigation.navigate('Queue')} />
+          <Tile icon="account-tie" label="Overseer E - Office" color="#8B1538" onPress={() => navigation.navigate('OverseerQueue')} />
+          <Tile icon="account" label="Pastor's E - Office" color="#8B1538" onPress={() => navigation.navigate('PastorQueue')} />
           <Tile icon="calendar" label="Events Calendar" color="#8B1538" onPress={() => navigation.navigate('Events')} />
           <Tile icon="shield-account" label="Admin" color="#8B1538" onPress={handleAdminAccess} />
         </ScrollView>

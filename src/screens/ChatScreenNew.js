@@ -1,5 +1,15 @@
 import React, { useState } from 'react';
-import { View, StyleSheet, Text, Dimensions, SafeAreaView, ScrollView, TextInput, TouchableOpacity, Alert } from 'react-native';
+import { 
+  View, 
+  StyleSheet, 
+  Text, 
+  Dimensions, 
+  SafeAreaView, 
+  ScrollView, 
+  TextInput, 
+  TouchableOpacity, 
+  Alert 
+} from 'react-native';
 import Header from '../components/Header';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
@@ -316,7 +326,7 @@ export default function ChatScreen({ navigation }) {
             
             <View style={styles.featureItem}>
               <MaterialCommunityIcons name="shield-check" size={24} color="#8B1538" />
-              <Text style={styles.featureText}>Secure & private conversations</Text>
+              <Text style={styles.featureText}>End to End Encryption</Text>
             </View>
           </View>
         </ScrollView>

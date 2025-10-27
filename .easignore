@@ -1,0 +1,16 @@
+.git
+.gitignore
+node_modules
+*.log
+.expo
+.vscode
+README.md
+MAPS_SETUP.md
+RESEND_SETUP_GUIDE.md
+dataconnect
+functions
+supabase
+src/dataconnect-generated
+.firebaserc
+firebase.json
+tsconfig.json

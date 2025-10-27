@@ -1,6 +1,16 @@
 import React, { useState } from 'react';
-import { View, StyleSheet, Text, Dimensions, SafeAreaView, ScrollView, TextInput, TouchableOpacity, Alert } from 'react-native';
-import Header from '../components/Header';
+import { 
+  View, 
+  StyleSheet, 
+  Text, 
+  Dimensions, 
+  ScrollView, 
+  TextInput, 
+  TouchableOpacity, 
+  Alert,
+  Image 
+} from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 import { auth } from '../config/firebase';
@@ -152,336 +162,318 @@ export default function ChatScreen({ navigation }) {
   };
 
   return (
-    <SafeAreaView style={styles.safeArea}>
-      <View style={styles.container}>
-        <Header title="AFMA Chat" subtitle="Community Conversations • Church Fellowship" />
-        
-        <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
-          {/* Header Section */}
-          <LinearGradient
-            colors={['#8B1538', '#A61B46', '#C02454']}
-            style={styles.headerCard}
-          >
-            <MaterialCommunityIcons name="chat" size={48} color="#fff" />
-            <Text style={styles.headerTitle}>AFMA Chat Community</Text>
-            <Text style={styles.headerSubtitle}>Connect with fellow believers and church members</Text>
-          </LinearGradient>
+    <SafeAreaView style={styles.container}>
+      {/* Background Gradient */}
+      <LinearGradient
+        colors={['#8B1538', '#A61B46', '#C02454', '#1e3c72', '#2a5298']}
+        style={styles.backgroundGradient}
+        start={{x: 0, y: 0}}
+        end={{x: 1, y: 1}}
+      >
+        {/* Church Logo Area */}
+        <View style={styles.logoContainer}>
+          <View style={styles.logoCircle}>
+            <MaterialCommunityIcons name="church" size={48} color="#fff" />
+          </View>
+          <Text style={styles.logoText}>AFMA</Text>
+          <Text style={styles.logoSubtext}>CONNECT</Text>
+        </View>
+      </LinearGradient>
 
-          {/* Auth Form */}
-          <View style={styles.formContainer}>
-            <View style={styles.tabContainer}>
-              <TouchableOpacity 
-                style={[styles.tab, !isRegistering && styles.activeTab]}
-                onPress={() => setIsRegistering(false)}
-              >
-                <Text style={[styles.tabText, !isRegistering && styles.activeTabText]}>Sign In</Text>
-              </TouchableOpacity>
-              <TouchableOpacity 
-                style={[styles.tab, isRegistering && styles.activeTab]}
-                onPress={() => setIsRegistering(true)}
-              >
-                <Text style={[styles.tabText, isRegistering && styles.activeTabText]}>Register</Text>
-              </TouchableOpacity>
-            </View>
+      {/* Content Card */}
+      <View style={styles.contentCard}>
+        <ScrollView showsVerticalScrollIndicator={false} bounces={false}>
+          {/* Tab Header */}
+          <View style={styles.tabHeader}>
+            <TouchableOpacity 
+              style={[styles.tabButton, !isRegistering && styles.activeTab]}
+              onPress={() => setIsRegistering(false)}
+            >
+              <Text style={[styles.tabText, !isRegistering && styles.activeTabText]}>
+                Sign In
+              </Text>
+            </TouchableOpacity>
+            <TouchableOpacity 
+              style={[styles.tabButton, isRegistering && styles.activeTab]}
+              onPress={() => setIsRegistering(true)}
+            >
+              <Text style={[styles.tabText, isRegistering && styles.activeTabText]}>
+                Join Now
+              </Text>
+            </TouchableOpacity>
+          </View>
 
+          {/* Welcome Text */}
+          <View style={styles.welcomeSection}>
+            <Text style={styles.welcomeTitle}>
+              {isRegistering ? 'Join our community!' : 'Welcome back!'}
+            </Text>
+            <Text style={styles.welcomeSubtitle}>
+              {isRegistering ? 'Create your account below' : 'Please sign in below'}
+            </Text>
+          </View>
+
+          {/* Form Fields */}
+          <View style={styles.formSection}>
+            {/* Full Name Field (Register Only) */}
             {isRegistering && (
-              <View style={styles.inputSection}>
+              <View style={styles.inputGroup}>
                 <Text style={styles.inputLabel}>Full Name</Text>
-                <View style={styles.inputContainer}>
-                  <MaterialCommunityIcons name="account" size={20} color="#8B1538" style={styles.inputIcon} />
-                  <TextInput
-                    style={styles.textInput}
-                    placeholder="Enter your full name"
-                    placeholderTextColor="#999"
-                    value={fullName}
-                    onChangeText={setFullName}
-                  />
-                </View>
+                <TextInput
+                  style={styles.textInput}
+                  placeholder="Enter your full name"
+                  placeholderTextColor="#999"
+                  value={fullName}
+                  onChangeText={setFullName}
+                  autoCapitalize="words"
+                />
               </View>
             )}
 
-            <View style={styles.inputSection}>
-              <Text style={styles.inputLabel}>Email Address</Text>
-              <View style={styles.inputContainer}>
-                <MaterialCommunityIcons name="email" size={20} color="#8B1538" style={styles.inputIcon} />
-                <TextInput
-                  style={styles.textInput}
-                  placeholder="your.email@example.com"
-                  placeholderTextColor="#999"
-                  value={email}
-                  onChangeText={setEmail}
-                  keyboardType="email-address"
-                  autoCapitalize="none"
-                />
+            {/* Email Field */}
+            <View style={styles.inputGroup}>
+              <View style={styles.labelRow}>
+                <Text style={styles.inputLabel}>Email address</Text>
+                <Text style={styles.requiredText}>Required</Text>
               </View>
+              <TextInput
+                style={styles.textInput}
+                placeholder="john@example.com"
+                placeholderTextColor="#999"
+                value={email}
+                onChangeText={setEmail}
+                keyboardType="email-address"
+                autoCapitalize="none"
+                autoCorrect={false}
+              />
             </View>
 
-            <View style={styles.inputSection}>
+            {/* Password Field */}
+            <View style={styles.inputGroup}>
               <Text style={styles.inputLabel}>Password</Text>
-              <View style={styles.inputContainer}>
-                <MaterialCommunityIcons name="lock" size={20} color="#8B1538" style={styles.inputIcon} />
+              <View style={styles.passwordContainer}>
                 <TextInput
-                  style={styles.textInput}
-                  placeholder="Enter your password"
+                  style={styles.passwordInput}
+                  placeholder="Password"
                   placeholderTextColor="#999"
                   value={password}
                   onChangeText={setPassword}
                   secureTextEntry={!showPassword}
                 />
-                <TouchableOpacity onPress={() => setShowPassword(!showPassword)}>
+                <TouchableOpacity 
+                  onPress={() => setShowPassword(!showPassword)}
+                  style={styles.eyeButton}
+                >
                   <MaterialCommunityIcons 
                     name={showPassword ? "eye-off" : "eye"} 
                     size={20} 
-                    color="#666" 
+                    color="#999" 
                   />
                 </TouchableOpacity>
               </View>
             </View>
 
+            {/* Confirm Password Field (Register Only) */}
             {isRegistering && (
-              <View style={styles.inputSection}>
+              <View style={styles.inputGroup}>
                 <Text style={styles.inputLabel}>Confirm Password</Text>
-                <View style={styles.inputContainer}>
-                  <MaterialCommunityIcons name="lock-check" size={20} color="#8B1538" style={styles.inputIcon} />
+                <View style={styles.passwordContainer}>
                   <TextInput
-                    style={styles.textInput}
-                    placeholder="Confirm your password"
+                    style={styles.passwordInput}
+                    placeholder="Confirm Password"
                     placeholderTextColor="#999"
                     value={confirmPassword}
                     onChangeText={setConfirmPassword}
                     secureTextEntry={!showConfirmPassword}
                   />
-                  <TouchableOpacity onPress={() => setShowConfirmPassword(!showConfirmPassword)}>
+                  <TouchableOpacity 
+                    onPress={() => setShowConfirmPassword(!showConfirmPassword)}
+                    style={styles.eyeButton}
+                  >
                     <MaterialCommunityIcons 
                       name={showConfirmPassword ? "eye-off" : "eye"} 
                       size={20} 
-                      color="#666" 
+                      color="#999" 
                     />
                   </TouchableOpacity>
                 </View>
               </View>
             )}
 
-            {!isRegistering && (
-              <TouchableOpacity onPress={handleForgotPassword} style={styles.forgotButton}>
-                <Text style={styles.forgotText}>Forgot password?</Text>
-              </TouchableOpacity>
-            )}
-
+            {/* Sign In Button */}
             <TouchableOpacity 
-              style={[styles.actionButton, isLoading && styles.actionButtonDisabled]} 
+              style={[styles.signInButton, isLoading && styles.disabledButton]}
               onPress={isRegistering ? handleRegister : handleSignIn}
               disabled={isLoading}
             >
               <LinearGradient
-                colors={isLoading ? ['#A5D6A7', '#C8E6C9'] : ['#4CAF50', '#66BB6A']}
-                style={styles.actionGradient}
+                colors={['#8B1538', '#A61B46']}
+                style={styles.buttonGradient}
+                start={{x: 0, y: 0}}
+                end={{x: 1, y: 0}}
               >
                 {isLoading ? (
-                  <>
-                    <MaterialCommunityIcons name="loading" size={20} color="#fff" />
-                    <Text style={styles.actionButtonText}>
-                      {isRegistering ? 'CREATING ACCOUNT...' : 'SIGNING IN...'}
-                    </Text>
-                  </>
+                  <MaterialCommunityIcons name="loading" size={20} color="#fff" />
                 ) : (
-                  <>
-                    <MaterialCommunityIcons name={isRegistering ? "account-plus" : "chat"} size={20} color="#fff" />
-                    <Text style={styles.actionButtonText}>
-                      {isRegistering ? 'CREATE ACCOUNT' : 'SIGN IN TO CHAT'}
-                    </Text>
-                  </>
+                  <Text style={styles.buttonText}>
+                    {isRegistering ? 'Join Now' : 'Sign In'}
+                  </Text>
                 )}
               </LinearGradient>
             </TouchableOpacity>
-          </View>
 
-          {/* Features Section */}
-          <View style={styles.featuresContainer}>
-            <Text style={styles.featuresTitle}>Chat Features</Text>
-            
-            <View style={styles.featureItem}>
-              <MaterialCommunityIcons name="forum" size={24} color="#8B1538" />
-              <Text style={styles.featureText}>Community discussions</Text>
+            {/* Forgot Password */}
+            {!isRegistering && (
+              <TouchableOpacity 
+                style={styles.forgotButton}
+                onPress={handleForgotPassword}
+              >
+                <Text style={styles.forgotText}>Forgot password?</Text>
+              </TouchableOpacity>
+            )}
+
+            {/* Switch Auth Mode */}
+            <View style={styles.switchSection}>
+              <Text style={styles.switchText}>
+                {isRegistering ? 'Already have an account? ' : 'Not a member? '}
+              </Text>
+              <TouchableOpacity onPress={() => setIsRegistering(!isRegistering)}>
+                <Text style={styles.switchLink}>
+                  {isRegistering ? 'Sign In' : 'Join now'}
+                </Text>
+              </TouchableOpacity>
+            {/* Full Name Field (Register Only) */}
+            {isRegistering && (
+              <View style={styles.inputGroup}>
+                <Text style={styles.inputLabel}>Full Name</Text>
+                <TextInput
+                  style={styles.textInput}
+                  placeholder="Enter your full name"
+                  placeholderTextColor="#999"
+                  value={fullName}
+                  onChangeText={setFullName}
+                  autoCapitalize="words"
+                />
+              </View>
+            )}
+
+            {/* Email Field */}
+            <View style={styles.inputGroup}>
+              <View style={styles.labelRow}>
+                <Text style={styles.inputLabel}>Email address</Text>
+                <Text style={styles.requiredText}>Required</Text>
+              </View>
+              <TextInput
+                style={styles.textInput}
+                placeholder="john@example.com"
+                placeholderTextColor="#999"
+                value={email}
+                onChangeText={setEmail}
+                keyboardType="email-address"
+                autoCapitalize="none"
+                autoCorrect={false}
+              />
             </View>
-            
-            <View style={styles.featureItem}>
-              <MaterialCommunityIcons name="account-group" size={24} color="#8B1538" />
-              <Text style={styles.featureText}>Connect with church members</Text>
+
+            {/* Password Field */}
+            <View style={styles.inputGroup}>
+              <Text style={styles.inputLabel}>Password</Text>
+              <View style={styles.passwordContainer}>
+                <TextInput
+                  style={styles.passwordInput}
+                  placeholder="Password"
+                  placeholderTextColor="#999"
+                  value={password}
+                  onChangeText={setPassword}
+                  secureTextEntry={!showPassword}
+                />
+                <TouchableOpacity 
+                  onPress={() => setShowPassword(!showPassword)}
+                  style={styles.eyeButton}
+                >
+                  <MaterialCommunityIcons 
+                    name={showPassword ? "eye-off" : "eye"} 
+                    size={20} 
+                    color="#999" 
+                  />
+                </TouchableOpacity>
+              </View>
             </View>
-            
-            <View style={styles.featureItem}>
-              <MaterialCommunityIcons name="bell" size={24} color="#8B1538" />
-              <Text style={styles.featureText}>Real-time notifications</Text>
+
+            {/* Confirm Password Field (Register Only) */}
+            {isRegistering && (
+              <View style={styles.inputGroup}>
+                <Text style={styles.inputLabel}>Confirm Password</Text>
+                <View style={styles.passwordContainer}>
+                  <TextInput
+                    style={styles.passwordInput}
+                    placeholder="Confirm Password"
+                    placeholderTextColor="#999"
+                    value={confirmPassword}
+                    onChangeText={setConfirmPassword}
+                    secureTextEntry={!showConfirmPassword}
+                  />
+                  <TouchableOpacity 
+                    onPress={() => setShowConfirmPassword(!showConfirmPassword)}
+                    style={styles.eyeButton}
+                  >
+                    <MaterialCommunityIcons 
+                      name={showConfirmPassword ? "eye-off" : "eye"} 
+                      size={20} 
+                      color="#999" 
+                    />
+                  </TouchableOpacity>
+                </View>
+              </View>
+            )}
+
+            {/* Sign In Button */}
+            <TouchableOpacity 
+              style={[styles.signInButton, isLoading && styles.disabledButton]}
+              onPress={isRegistering ? handleRegister : handleSignIn}
+              disabled={isLoading}
+            >
+              <LinearGradient
+                colors={['#8B1538', '#A61B46']}
+                style={styles.buttonGradient}
+                start={{x: 0, y: 0}}
+                end={{x: 1, y: 0}}
+              >
+                {isLoading ? (
+                  <MaterialCommunityIcons name="loading" size={20} color="#fff" />
+                ) : (
+                  <Text style={styles.buttonText}>
+                    {isRegistering ? 'Join Now' : 'Sign In'}
+                  </Text>
+                )}
+              </LinearGradient>
+            </TouchableOpacity>
+
+            {/* Forgot Password */}
+            {!isRegistering && (
+              <TouchableOpacity 
+                style={styles.forgotButton}
+                onPress={handleForgotPassword}
+              >
+                <Text style={styles.forgotText}>Forgot password?</Text>
+              </TouchableOpacity>
+            )}
+
+            {/* Switch Auth Mode */}
+            <View style={styles.switchSection}>
+              <Text style={styles.switchText}>
+                {isRegistering ? 'Already have an account? ' : 'Not a member? '}
+              </Text>
+              <TouchableOpacity onPress={() => setIsRegistering(!isRegistering)}>
+                <Text style={styles.switchLink}>
+                  {isRegistering ? 'Sign In' : 'Join now'}
+                </Text>
+              </TouchableOpacity>
             </View>
-            
-            <View style={styles.featureItem}>
-              <MaterialCommunityIcons name="shield-check" size={24} color="#8B1538" />
-              <Text style={styles.featureText}>Secure & private conversations</Text>
-            </View>
+          </View>
           </View>
         </ScrollView>
       </View>
     </SafeAreaView>
   );
-}
-
-const styles = StyleSheet.create({
-  safeArea: {
-    flex: 1,
-    backgroundColor: '#f4f6f9',
-  },
-  container: {
-    flex: 1,
-    backgroundColor: '#f4f6f9',
-  },
-  content: {
-    flex: 1,
-    paddingHorizontal: width * 0.04,
-    paddingTop: height * 0.02,
-  },
-  headerCard: {
-    borderRadius: 20,
-    padding: width * 0.06,
-    alignItems: 'center',
-    marginBottom: height * 0.03,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.2,
-    shadowRadius: 8,
-    elevation: 8,
-  },
-  headerTitle: {
-    fontSize: Math.min(width * 0.06, 24),
-    fontWeight: '800',
-    color: '#fff',
-    marginTop: height * 0.01,
-  },
-  headerSubtitle: {
-    fontSize: Math.min(width * 0.035, 14),
-    color: 'rgba(255,255,255,0.9)',
-    textAlign: 'center',
-    marginTop: height * 0.005,
-  },
-  formContainer: {
-    backgroundColor: '#fff',
-    borderRadius: 20,
-    padding: width * 0.05,
-    marginBottom: height * 0.03,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 3,
-  },
-  tabContainer: {
-    flexDirection: 'row',
-    backgroundColor: '#f8f9fa',
-    borderRadius: 12,
-    padding: 4,
-    marginBottom: height * 0.025,
-  },
-  tab: {
-    flex: 1,
-    paddingVertical: height * 0.015,
-    alignItems: 'center',
-    borderRadius: 8,
-  },
-  activeTab: {
-    backgroundColor: '#8B1538',
-  },
-  tabText: {
-    fontSize: Math.min(width * 0.04, 16),
-    fontWeight: '600',
-    color: '#666',
-  },
-  activeTabText: {
-    color: '#fff',
-  },
-  inputSection: {
-    marginBottom: height * 0.02,
-  },
-  inputLabel: {
-    fontSize: Math.min(width * 0.035, 14),
-    fontWeight: '600',
-    color: '#8B1538',
-    marginBottom: height * 0.01,
-  },
-  inputContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: '#f8f9fa',
-    borderRadius: 12,
-    paddingHorizontal: width * 0.04,
-    paddingVertical: height * 0.018,
-    borderWidth: 1,
-    borderColor: '#e9ecef',
-  },
-  inputIcon: {
-    marginRight: width * 0.03,
-  },
-  textInput: {
-    flex: 1,
-    fontSize: Math.min(width * 0.04, 16),
-    color: '#333',
-  },
-  forgotButton: {
-    alignSelf: 'flex-end',
-    marginBottom: height * 0.02,
-  },
-  forgotText: {
-    fontSize: Math.min(width * 0.035, 14),
-    color: '#8B1538',
-    fontWeight: '600',
-  },
-  actionButton: {
-    borderRadius: 15,
-    shadowColor: '#4CAF50',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.3,
-    shadowRadius: 8,
-    elevation: 8,
-  },
-  actionGradient: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    paddingVertical: height * 0.02,
-    borderRadius: 15,
-  },
-  actionButtonText: {
-    color: '#fff',
-    fontSize: Math.min(width * 0.04, 16),
-    fontWeight: '700',
-    marginLeft: 8,
-  },
-  featuresContainer: {
-    backgroundColor: '#fff',
-    borderRadius: 15,
-    padding: width * 0.05,
-    marginBottom: height * 0.03,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 3,
-  },
-  featuresTitle: {
-    fontSize: Math.min(width * 0.045, 18),
-    fontWeight: '700',
-    color: '#8B1538',
-    marginBottom: height * 0.02,
-    textAlign: 'center',
-  },
-  featureItem: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: height * 0.015,
-  },
-  featureText: {
-    fontSize: Math.min(width * 0.04, 16),
-    color: '#333',
-    marginLeft: width * 0.03,
-    flex: 1,
-  },
-});
+} 

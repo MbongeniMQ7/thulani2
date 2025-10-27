@@ -10,8 +10,10 @@ import ELibraryScreen from '../screens/ELibraryScreen';
 import ChatScreen from '../screens/ChatScreen';
 import ChatScreenNew from '../screens/ChatScreenNew';
 import ChoirScreen from '../screens/ChoirScreen';
+import ForumsHubScreen from '../screens/ForumsHubScreen';
 import QueueScreen from '../screens/QueueScreen';
 import MediaCentreScreen from '../screens/MediaCentreScreen';
+import YouthPodcastScreen from '../screens/YouthPodcastScreen';
 import ChatInterface from '../screens/ChatInterface';
 import BranchLocatorScreen from '../screens/BranchLocatorScreen';
 import OverseerQueueScreen from '../screens/OverseerQueueScreen';
@@ -20,6 +22,7 @@ import PDFViewerScreen from '../screens/PDFViewerScreen';
 import ForumChatScreen from '../screens/ForumChatScreen';
 import AdminChatScreen from '../screens/AdminChatScreen';
 import AdminChatInterface from '../screens/AdminChatInterface';
+import AdminQueueManagement from '../screens/AdminQueueManagement';
 
 const { width } = Dimensions.get('window');
 const Tab = createBottomTabNavigator();
@@ -82,13 +85,8 @@ function TabNavigator() {
       />
       <Tab.Screen
         name="Forums"
-        component={ChoirScreen}
+        component={ForumsHubScreen}
         options={{ tabBarIcon: getTabBarIcon("forum") }}
-      />
-      <Tab.Screen
-        name="Queue"
-        component={QueueScreen}
-        options={{ tabBarIcon: getTabBarIcon("account-clock") }}
       />
     </Tab.Navigator>
   );
@@ -99,14 +97,17 @@ export default function AppNavigator() {
     <Stack.Navigator screenOptions={{ headerShown: false }}>
       <Stack.Screen name="MainTabs" component={TabNavigator} />
       <Stack.Screen name="MediaCentre" component={MediaCentreScreen} />
+      <Stack.Screen name="YouthPodcast" component={YouthPodcastScreen} />
       <Stack.Screen name="ChatInterface" component={ChatInterface} />
       <Stack.Screen name="BranchLocator" component={BranchLocatorScreen} />
       <Stack.Screen name="OverseerQueue" component={OverseerQueueScreen} />
       <Stack.Screen name="PastorQueue" component={PastorQueueScreen} />
       <Stack.Screen name="PDFViewer" component={PDFViewerScreen} />
+      <Stack.Screen name="ChoirAuth" component={ChoirScreen} />
       <Stack.Screen name="ForumChat" component={ForumChatScreen} />
       <Stack.Screen name="AdminChat" component={AdminChatScreen} />
       <Stack.Screen name="AdminChatInterface" component={AdminChatInterface} />
+      <Stack.Screen name="AdminQueueManagement" component={AdminQueueManagement} />
     </Stack.Navigator>
   );
 }

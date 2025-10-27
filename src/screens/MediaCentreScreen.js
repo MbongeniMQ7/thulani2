@@ -1,26 +1,58 @@
 import React from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Dimensions } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Dimensions, Linking, Alert } from 'react-native';
 import { BlurView } from 'expo-blur';
 import { LinearGradient } from 'expo-linear-gradient';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import Header from '../components/Header';
+import YouTubeLiveStreamAPI from '../components/YouTubeLiveStreamAPI';
+import { YOUTUBE_CONFIG } from '../config/youtube';
 
 const { width, height } = Dimensions.get('window');
 
 const MediaCentreScreen = ({ navigation }) => {
   const handleWatchNow = (content) => {
-    // Handle watch now functionality
-    console.log('Watch now:', content);
+    if (content === 'Youth Podcast') {
+      navigation.navigate('YouthPodcast');
+    } else {
+      console.log('Watch now:', content);
+    }
   };
 
-  const handleFacebookLink = () => {
-    // Handle Facebook link
-    console.log('Open Facebook page');
+  const handleFacebookLink = async () => {
+    const facebookUrl = 'https://www.facebook.com/share/1MrE5qZYTD/?mibextid=wwXIfr';
+    
+    try {
+      const supported = await Linking.canOpenURL(facebookUrl);
+      if (supported) {
+        await Linking.openURL(facebookUrl);
+      } else {
+        Alert.alert('Error', 'Unable to open Facebook link. Please check if you have a web browser installed.');
+      }
+    } catch (error) {
+      console.error('Error opening Facebook link:', error);
+      Alert.alert('Error', 'Failed to open Facebook link. Please try again.');
+    }
   };
 
-  const handleWebsiteLink = () => {
-    // Handle website link
-    console.log('Website coming soon');
+  const handleWebsiteLink = async () => {
+    const websiteUrl = 'https://afmademmo.netlify.app/';
+    
+    try {
+      const supported = await Linking.canOpenURL(websiteUrl);
+      if (supported) {
+        await Linking.openURL(websiteUrl);
+      } else {
+        Alert.alert('Error', 'Unable to open website. Please check if you have a web browser installed.');
+      }
+    } catch (error) {
+      console.error('Error opening website:', error);
+      Alert.alert('Error', 'Failed to open website. Please try again.');
+    }
+  };
+
+  const handleLiveStatusChange = (isLive) => {
+    console.log('YouTube live status changed:', isLive);
+    // You can add additional logic here when live status changes
   };
 
   return (
@@ -33,61 +65,161 @@ const MediaCentreScreen = ({ navigation }) => {
       />
       
       <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
-        {/* Sunday Morning Service */}
-        <View style={styles.serviceCard}>
-          <LinearGradient
-            colors={['#8B1538', '#A91B47']}
-            style={styles.serviceGradient}
-          >
-            <Text style={styles.serviceTitle}>Sunday Morning Service</Text>
-            <Text style={styles.serviceLiveText}>Live from HQ</Text>
-            
-            <TouchableOpacity 
-              style={styles.watchButton}
-              onPress={() => handleWatchNow('Sunday Morning Service')}
+        {/* Hero Section */}
+        <LinearGradient
+          colors={['#8B1538', '#A61B46', '#C02454']}
+          style={styles.heroSection}
+        >
+          <MaterialCommunityIcons name="multimedia" size={64} color="#fff" />
+          <Text style={styles.heroTitle}>AFMA Media Hub</Text>
+          <Text style={styles.heroSubtitle}>Watch live services • Listen to podcasts • Stay connected</Text>
+        </LinearGradient>
+
+        {/* Stats Cards */}
+        <View style={styles.statsContainer}>
+          <View style={styles.statCard}>
+            <LinearGradient
+              colors={['#FF6B6B', '#FF8E53']}
+              style={styles.statGradient}
             >
-              <MaterialCommunityIcons name="play-circle" size={24} color="white" />
-              <Text style={styles.watchButtonText}>watch now</Text>
-            </TouchableOpacity>
-          </LinearGradient>
+              <MaterialCommunityIcons name="youtube" size={32} color="#fff" />
+              <Text style={styles.statNumber}>1.2K+</Text>
+              <Text style={styles.statLabel}>Subscribers</Text>
+            </LinearGradient>
+          </View>
+          
+          <View style={styles.statCard}>
+            <LinearGradient
+              colors={['#4ECDC4', '#44A08D']}
+              style={styles.statGradient}
+            >
+              <MaterialCommunityIcons name="podcast" size={32} color="#fff" />
+              <Text style={styles.statNumber}>50+</Text>
+              <Text style={styles.statLabel}>Episodes</Text>
+            </LinearGradient>
+          </View>
+          
+          <View style={styles.statCard}>
+            <LinearGradient
+              colors={['#A770EF', '#CF8BF3']}
+              style={styles.statGradient}
+            >
+              <MaterialCommunityIcons name="eye" size={32} color="#fff" />
+              <Text style={styles.statNumber}>10K+</Text>
+              <Text style={styles.statLabel}>Views</Text>
+            </LinearGradient>
+          </View>
         </View>
 
-        {/* Youth Podcast */}
-        <View style={styles.serviceCard}>
-          <LinearGradient
-            colors={['#8B1538', '#A91B47']}
-            style={styles.serviceGradient}
+        {/* Live Stream Section */}
+        <View style={styles.sectionContainer}>
+          <View style={styles.sectionHeader}>
+            <MaterialCommunityIcons name="video-wireless" size={28} color="#8B1538" />
+            <Text style={styles.sectionTitle}>Live Stream</Text>
+          </View>
+          
+          {/* YouTube Live Stream - Using YouTube Data API */}
+          <YouTubeLiveStreamAPI
+            channelId={YOUTUBE_CONFIG.CHANNEL_ID}
+            channelHandle={YOUTUBE_CONFIG.CHANNEL_HANDLE}
+            onLiveStatusChange={handleLiveStatusChange}
+          />
+        </View>
+
+        {/* Podcasts Section */}
+        <View style={styles.sectionContainer}>
+          <View style={styles.sectionHeader}>
+            <MaterialCommunityIcons name="podcast" size={28} color="#8B1538" />
+            <Text style={styles.sectionTitle}>Podcasts</Text>
+          </View>
+          
+          {/* Youth Podcast */}
+          <TouchableOpacity 
+            style={styles.podcastCard}
+            onPress={() => handleWatchNow('Youth Podcast')}
           >
-            <View style={styles.podcastHeader}>
-              <MaterialCommunityIcons name="account-group" size={32} color="white" />
-              <Text style={styles.podcastTitle}>Youth Podcast</Text>
+            <LinearGradient
+              colors={['#8B1538', '#A91B47', '#C02454']}
+              style={styles.podcastGradient}
+            >
+              <View style={styles.podcastContent}>
+                <View style={styles.podcastIconContainer}>
+                  <MaterialCommunityIcons name="account-group" size={40} color="white" />
+                </View>
+                <View style={styles.podcastInfo}>
+                  <Text style={styles.podcastTitle}>Youth Podcast</Text>
+                  <Text style={styles.podcastSubtitle}>Inspiring conversations for young believers</Text>
+                </View>
+              </View>
+              
+              <View style={styles.playButtonContainer}>
+                <MaterialCommunityIcons name="play-circle" size={50} color="rgba(255,255,255,0.9)" />
+                <Text style={styles.watchNowText}>WATCH NOW</Text>
+              </View>
+            </LinearGradient>
+          </TouchableOpacity>
+        </View>
+
+        {/* Social Media & Links Section */}
+        <View style={styles.sectionContainer}>
+          <View style={styles.sectionHeader}>
+            <MaterialCommunityIcons name="share-variant" size={28} color="#8B1538" />
+            <Text style={styles.sectionTitle}>Connect With Us</Text>
+          </View>
+
+          {/* Facebook Link */}
+          <TouchableOpacity style={styles.socialCard} onPress={handleFacebookLink}>
+            <View style={styles.socialCardContent}>
+              <View style={styles.socialIconWrapper}>
+                <MaterialCommunityIcons name="facebook" size={48} color="#1877F2" />
+              </View>
+              <View style={styles.socialTextContainer}>
+                <Text style={styles.socialLabel}>Follow us on Facebook</Text>
+                <Text style={styles.socialName}>The Apostolic Faith Mission of Africa</Text>
+                <View style={styles.followersBadge}>
+                  <MaterialCommunityIcons name="account-multiple" size={14} color="#1877F2" />
+                  <Text style={styles.followersText}>5.2K+ Followers</Text>
+                </View>
+              </View>
+              <MaterialCommunityIcons name="chevron-right" size={28} color="#8B1538" />
             </View>
-            
-            <TouchableOpacity 
-              style={styles.watchButton}
-              onPress={() => handleWatchNow('Youth Podcast')}
-            >
-              <MaterialCommunityIcons name="play-circle" size={24} color="white" />
-              <Text style={styles.watchButtonText}>watch now</Text>
-            </TouchableOpacity>
-          </LinearGradient>
+          </TouchableOpacity>
+
+          {/* YouTube Channel Card */}
+          <TouchableOpacity style={styles.youtubeCard}>
+            <View style={styles.socialCardContent}>
+              <View style={styles.youtubeIconWrapper}>
+                <MaterialCommunityIcons name="youtube" size={48} color="#FF0000" />
+              </View>
+              <View style={styles.socialTextContainer}>
+                <Text style={styles.socialLabel}>Subscribe on YouTube</Text>
+                <Text style={styles.socialName}>AFMA Live Services</Text>
+                <View style={styles.followersBadge}>
+                  <MaterialCommunityIcons name="play-circle" size={14} color="#FF0000" />
+                  <Text style={styles.followersText}>1.2K+ Subscribers</Text>
+                </View>
+              </View>
+              <MaterialCommunityIcons name="chevron-right" size={28} color="#8B1538" />
+            </View>
+          </TouchableOpacity>
+
+          {/* Website Link */}
+          <TouchableOpacity style={styles.websiteCard} onPress={handleWebsiteLink}>
+            <View style={styles.websiteCardContent}>
+              <View style={styles.websiteIconWrapper}>
+                <MaterialCommunityIcons name="web" size={48} color="#8B1538" />
+              </View>
+              <View style={styles.websiteTextContainer}>
+                <Text style={styles.websiteLabel}>Visit Our Website</Text>
+                <View style={styles.comingSoonBadge}>
+                  <MaterialCommunityIcons name="clock-outline" size={16} color="#fff" />
+                  <Text style={styles.comingSoonText}>Coming Soon</Text>
+                </View>
+              </View>
+              <MaterialCommunityIcons name="chevron-right" size={28} color="#8B1538" />
+            </View>
+          </TouchableOpacity>
         </View>
-
-        {/* Facebook Link */}
-        <TouchableOpacity style={styles.socialCard} onPress={handleFacebookLink}>
-          <BlurView intensity={20} style={styles.socialCardBlur}>
-            <MaterialCommunityIcons name="facebook" size={40} color="#1877F2" />
-            <Text style={styles.socialCardText}>The Apostolic Faith Mission of Africa</Text>
-          </BlurView>
-        </TouchableOpacity>
-
-        {/* Website Link */}
-        <TouchableOpacity style={styles.websiteCard} onPress={handleWebsiteLink}>
-          <BlurView intensity={20} style={styles.websiteCardBlur}>
-            <Text style={styles.websiteLinkText}>website link</Text>
-            <Text style={styles.comingSoonText}>coming soon</Text>
-          </BlurView>
-        </TouchableOpacity>
       </ScrollView>
     </View>
   );
@@ -101,101 +233,241 @@ const styles = StyleSheet.create({
   content: {
     flex: 1,
     paddingHorizontal: width * 0.04,
-    paddingTop: height * 0.02,
+    paddingTop: height * 0.01,
   },
-  serviceCard: {
-    marginBottom: height * 0.02,
-    borderRadius: 12,
-    overflow: 'hidden',
-    elevation: 4,
+  heroSection: {
+    padding: width * 0.06,
+    borderRadius: 20,
+    alignItems: 'center',
+    marginBottom: 20,
     shadowColor: '#000',
-    shadowOffset: {
-      width: 0,
-      height: 2,
-    },
-    shadowOpacity: 0.25,
-    shadowRadius: 3.84,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 8,
+    elevation: 8,
   },
-  serviceGradient: {
-    padding: height * 0.03,
-    minHeight: height * 0.15,
-    justifyContent: 'space-between',
-  },
-  serviceTitle: {
-    fontSize: width * 0.065,
+  heroTitle: {
+    fontSize: width * 0.06,
     fontWeight: 'bold',
-    color: 'white',
-    marginBottom: height * 0.01,
+    color: '#fff',
+    marginTop: 12,
+    textAlign: 'center',
   },
-  serviceLiveText: {
-    fontSize: width * 0.04,
-    color: 'rgba(255, 255, 255, 0.9)',
-    marginBottom: height * 0.02,
+  heroSubtitle: {
+    fontSize: width * 0.035,
+    color: '#fff',
+    marginTop: 8,
+    textAlign: 'center',
+    opacity: 0.95,
   },
-  podcastHeader: {
+  statsContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginBottom: 20,
+  },
+  statCard: {
+    flex: 1,
+    marginHorizontal: 5,
+    borderRadius: 15,
+    overflow: 'hidden',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 3 },
+    shadowOpacity: 0.2,
+    shadowRadius: 5,
+    elevation: 5,
+  },
+  statGradient: {
+    padding: 15,
+    alignItems: 'center',
+  },
+  statNumber: {
+    fontSize: width * 0.055,
+    fontWeight: 'bold',
+    color: '#fff',
+    marginTop: 8,
+  },
+  statLabel: {
+    fontSize: width * 0.03,
+    color: 'rgba(255,255,255,0.95)',
+    marginTop: 4,
+    textAlign: 'center',
+  },
+  sectionContainer: {
+    marginBottom: 25,
+  },
+  sectionHeader: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: height * 0.02,
+    marginBottom: 15,
+  },
+  sectionTitle: {
+    fontSize: width * 0.05,
+    fontWeight: 'bold',
+    color: '#333',
+    marginLeft: 10,
+  },
+  podcastCard: {
+    borderRadius: 15,
+    overflow: 'hidden',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 3 },
+    shadowOpacity: 0.2,
+    shadowRadius: 6,
+    elevation: 5,
+  },
+  podcastGradient: {
+    padding: 20,
+  },
+  podcastContent: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 20,
+  },
+  podcastIconContainer: {
+    backgroundColor: 'rgba(255,255,255,0.2)',
+    borderRadius: 50,
+    padding: 15,
+    marginRight: 15,
+  },
+  podcastInfo: {
+    flex: 1,
   },
   podcastTitle: {
-    fontSize: width * 0.065,
+    fontSize: width * 0.055,
     fontWeight: 'bold',
     color: 'white',
-    marginLeft: width * 0.03,
+    marginBottom: 5,
   },
-  watchButton: {
-    flexDirection: 'row',
+  podcastSubtitle: {
+    fontSize: width * 0.035,
+    color: 'rgba(255,255,255,0.9)',
+  },
+  playButtonContainer: {
     alignItems: 'center',
-    alignSelf: 'flex-start',
   },
-  watchButtonText: {
+  watchNowText: {
     fontSize: width * 0.04,
     color: 'white',
-    marginLeft: width * 0.02,
-    fontWeight: '500',
+    fontWeight: 'bold',
+    marginTop: 8,
+    letterSpacing: 1,
   },
   socialCard: {
-    marginBottom: height * 0.02,
-    borderRadius: 12,
-    overflow: 'hidden',
-    borderWidth: 2,
-    borderColor: '#8B1538',
+    backgroundColor: '#fff',
+    borderRadius: 15,
+    marginBottom: 15,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 3,
+    borderLeftWidth: 4,
+    borderLeftColor: '#1877F2',
   },
-  socialCardBlur: {
-    padding: height * 0.025,
+  socialCardContent: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: 'rgba(255, 255, 255, 0.9)',
+    padding: 18,
   },
-  socialCardText: {
-    fontSize: width * 0.04,
-    color: '#8B1538',
-    marginLeft: width * 0.03,
+  socialIconWrapper: {
+    backgroundColor: '#E7F3FF',
+    borderRadius: 50,
+    padding: 12,
+    marginRight: 15,
+  },
+  socialTextContainer: {
     flex: 1,
+  },
+  socialLabel: {
+    fontSize: width * 0.032,
+    color: '#666',
+    marginBottom: 4,
+  },
+  socialName: {
+    fontSize: width * 0.04,
+    color: '#333',
+    fontWeight: '600',
+  },
+  followersBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#f0f0f0',
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 10,
+    alignSelf: 'flex-start',
+    marginTop: 6,
+  },
+  followersText: {
+    fontSize: width * 0.03,
+    color: '#666',
+    marginLeft: 4,
     fontWeight: '500',
+  },
+  youtubeCard: {
+    backgroundColor: '#fff',
+    borderRadius: 15,
+    marginBottom: 15,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 3,
+    borderLeftWidth: 4,
+    borderLeftColor: '#FF0000',
+  },
+  youtubeIconWrapper: {
+    backgroundColor: '#FFE5E5',
+    borderRadius: 50,
+    padding: 12,
+    marginRight: 15,
   },
   websiteCard: {
-    marginBottom: height * 0.02,
-    borderRadius: 12,
-    overflow: 'hidden',
-    borderWidth: 2,
-    borderColor: '#8B1538',
+    backgroundColor: '#fff',
+    borderRadius: 15,
+    marginBottom: 15,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 3,
+    borderLeftWidth: 4,
+    borderLeftColor: '#8B1538',
   },
-  websiteCardBlur: {
-    padding: height * 0.025,
-    backgroundColor: 'rgba(255, 255, 255, 0.9)',
+  websiteCardContent: {
+    flexDirection: 'row',
     alignItems: 'center',
+    padding: 18,
   },
-  websiteLinkText: {
+  websiteIconWrapper: {
+    backgroundColor: '#FFF0F3',
+    borderRadius: 50,
+    padding: 12,
+    marginRight: 15,
+  },
+  websiteTextContainer: {
+    flex: 1,
+  },
+  websiteLabel: {
     fontSize: width * 0.04,
-    color: '#8B1538',
-    fontWeight: '500',
-    marginBottom: height * 0.005,
+    color: '#333',
+    fontWeight: '600',
+    marginBottom: 8,
+  },
+  comingSoonBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#8B1538',
+    paddingHorizontal: 10,
+    paddingVertical: 5,
+    borderRadius: 12,
+    alignSelf: 'flex-start',
   },
   comingSoonText: {
-    fontSize: width * 0.05,
-    color: '#8B1538',
+    fontSize: width * 0.03,
+    color: '#fff',
     fontWeight: 'bold',
+    marginLeft: 5,
   },
 });
 

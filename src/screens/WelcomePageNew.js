@@ -2,7 +2,6 @@ import React, { useState, useEffect, useRef } from 'react';
 import { 
   View, 
   StyleSheet, 
-  ImageBackground, 
   Text, 
   Dimensions, 
   StatusBar, 
@@ -11,6 +10,7 @@ import {
   Animated,
   Image
 } from 'react-native';
+import { Video, ResizeMode } from 'expo-av';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 
@@ -22,15 +22,15 @@ const slides = [
     title: "Welcome Home",
     subtitle: "Apostolic Faith Mission of Africa",
     description: "A church with an open door and a burning message",
-    image: "https://images.unsplash.com/photo-1507692049790-de58290a4334?q=80&w=1600&auto=format&fit=crop",
+    image: { uri: "https://imiojmzohfizckxbnfmk.supabase.co/storage/v1/object/public/AFMA/church.jpg" },
     icon: "church"
   },
   {
     id: 2,
     title: "Spiritual Growth",
-    subtitle: "Grow in Faith Together",
+    subtitle: "a church with an open door and a burning message",
     description: "Join our community in worship, prayer, and spiritual development",
-    image: "https://images.unsplash.com/photo-1438032005730-c779502df39b?q=80&w=1600&auto=format&fit=crop",
+    image: { uri: "https://imiojmzohfizckxbnfmk.supabase.co/storage/v1/object/public/AFMA/pst.jpg" },
     icon: "book-open-variant"
   },
   {
@@ -38,7 +38,7 @@ const slides = [
     title: "Connect & Serve",
     subtitle: "Be Part of Something Greater",
     description: "Connect with fellow believers and serve in our community",
-    image: "https://images.unsplash.com/photo-1511632765486-a01980e01a18?q=80&w=1600&auto=format&fit=crop",
+    image: { uri: "https://imiojmzohfizckxbnfmk.supabase.co/storage/v1/object/public/AFMA/church.jpg" },
     icon: "account-group"
   }
 ];
@@ -46,6 +46,8 @@ const slides = [
 export default function WelcomeScreen({ navigation }) {
   const [currentSlide, setCurrentSlide] = useState(0);
   const fadeAnim = useRef(new Animated.Value(1)).current;
+  const videoRef = useRef(null);
+  const [videoError, setVideoError] = useState(false);
 
   useEffect(() => {
     const timer = setInterval(() => {
@@ -73,60 +75,45 @@ export default function WelcomeScreen({ navigation }) {
     return () => clearInterval(timer);
   }, [fadeAnim]);
 
+  const handleVideoError = (error) => {
+    console.log('Video loading error:', error);
+    setVideoError(true);
+  };
+
   const currentSlideData = slides[currentSlide];
 
   return (
     <SafeAreaView style={styles.safeArea}>
       <StatusBar barStyle="light-content" translucent backgroundColor="transparent" />
-      <ImageBackground
-        source={{ uri: currentSlideData.image }}
-        style={styles.bg}
-        resizeMode="cover"
-      >
+      <View style={styles.bg}>
+        {!videoError && (
+          <Video
+            ref={videoRef}
+            source={{ uri: 'https://imiojmzohfizckxbnfmk.supabase.co/storage/v1/object/public/AFMA/vid.mp4' }}
+            style={styles.video}
+            resizeMode={ResizeMode.COVER}
+            shouldPlay
+            isLooping
+            isMuted
+            onError={handleVideoError}
+          />
+        )}
         <LinearGradient
-          colors={['rgba(139, 21, 56, 0.3)', 'rgba(139, 21, 56, 0.7)', 'rgba(139, 21, 56, 0.9)']}
+          colors={['rgba(0, 0, 0, 0.3)', 'rgba(0, 0, 0, 0.5)', 'rgba(0, 0, 0, 0.7)']}
           style={styles.gradient}
         >
           <Animated.View style={[styles.container, { opacity: fadeAnim }]}>
-            {/* Logo Section */}
-            <View style={styles.logoSection}>
-              <View style={styles.logoContainer}>
-                <Image
-                  source={require('../../assets/img/logo.jpg')}
-                  style={styles.churchLogo}
-                  resizeMode="contain"
-                />
-                <Text style={styles.afmaTitle}>AFMA</Text>
-                <Text style={styles.fullChurchName}>Apostolic Faith Mission of Africa</Text>
-              </View>
-            </View>
-
             {/* Slide Content */}
             <View style={styles.contentSection}>
-              <View style={styles.iconContainer}>
-                <MaterialCommunityIcons 
-                  name={currentSlideData.icon} 
-                  size={80} 
-                  color="#fff" 
+              <View style={styles.imageContainer}>
+                <Image 
+                  source={{ uri: 'https://imiojmzohfizckxbnfmk.supabase.co/storage/v1/object/public/AFMA/church.jpg' }}
+                  style={styles.churchImage}
+                  resizeMode="cover"
                 />
               </View>
               
-              <Text style={styles.slideTitle}>{currentSlideData.title}</Text>
-              <Text style={styles.slideSubtitle}>{currentSlideData.subtitle}</Text>
-              <Text style={styles.slideDescription}>{currentSlideData.description}</Text>
-            </View>
-
-            {/* Slide Indicators */}
-            <View style={styles.indicatorContainer}>
-              {slides.map((_, index) => (
-                <View
-                  key={index}
-                  style={[
-                    styles.indicator,
-                    index === currentSlide && styles.activeIndicator
-                  ]}
-                />
-              ))}
+              <Text style={styles.fullChurchName}>Apostolic Faith Mission of Africa</Text>
             </View>
 
             {/* Get Started Button */}
@@ -143,17 +130,10 @@ export default function WelcomeScreen({ navigation }) {
                   <MaterialCommunityIcons name="arrow-right" size={24} color="#8B1538" />
                 </LinearGradient>
               </TouchableOpacity>
-              
-              <TouchableOpacity 
-                style={styles.skipButton}
-                onPress={() => navigation.navigate('App')}
-              >
-                <Text style={styles.skipText}>Explore the App</Text>
-              </TouchableOpacity>
             </View>
           </Animated.View>
         </LinearGradient>
-      </ImageBackground>
+      </View>
     </SafeAreaView>
   );
 }
@@ -166,15 +146,25 @@ const styles = StyleSheet.create({
     flex: 1,
     width: '100%',
     height: '100%',
+    backgroundColor: '#1a1a1a', // Fallback background color
+  },
+  video: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    bottom: 0,
+    right: 0,
+    width: '100%',
+    height: '100%',
   },
   gradient: {
     flex: 1,
   },
   container: {
     flex: 1,
-    justifyContent: 'space-between',
+    justifyContent: 'flex-start',
     paddingHorizontal: width * 0.06,
-    paddingTop: height * 0.02,
+    paddingTop: height * 0.08,
     paddingBottom: height * 0.03,
   },
   logoSection: {
@@ -208,56 +198,84 @@ const styles = StyleSheet.create({
     textShadowRadius: 4,
   },
   fullChurchName: {
-    fontSize: Math.min(width * 0.035, 14),
-    fontWeight: '600',
+    fontSize: Math.min(width * 0.055, 22),
+    fontWeight: '700',
     color: '#fff',
     textAlign: 'center',
-    marginTop: height * 0.005,
-    opacity: 0.9,
-    letterSpacing: 1,
+    marginTop: height * 0.02,
+    opacity: 1,
+    letterSpacing: 1.2,
+    textShadowColor: 'rgba(0, 0, 0, 0.5)',
+    textShadowOffset: { width: 1, height: 1 },
+    textShadowRadius: 4,
   },
   contentSection: {
     alignItems: 'center',
-    flex: 0.4,
-    justifyContent: 'center',
+    justifyContent: 'flex-start',
     paddingHorizontal: width * 0.04,
   },
-  iconContainer: {
-    backgroundColor: 'rgba(255, 255, 255, 0.15)',
-    borderRadius: 50,
-    padding: width * 0.05,
+  imageContainer: {
+    width: width * 0.28,
+    height: width * 0.28,
+    borderRadius: width * 0.14,
+    overflow: 'hidden',
     marginBottom: height * 0.025,
+    borderWidth: 3,
+    borderColor: '#fff',
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.3,
     shadowRadius: 8,
-    elevation: 8,
+    elevation: 10,
+    backgroundColor: '#fff',
+  },
+  churchImage: {
+    width: '100%',
+    height: '100%',
+  },
+  iconContainer: {
+    backgroundColor: 'rgba(255, 255, 255, 0.2)',
+    borderRadius: 60,
+    padding: width * 0.06,
+    marginBottom: height * 0.03,
+    shadowColor: '#fff',
+    shadowOffset: { width: 0, height: 6 },
+    shadowOpacity: 0.3,
+    shadowRadius: 10,
+    elevation: 10,
+    borderWidth: 2,
+    borderColor: 'rgba(255, 255, 255, 0.3)',
   },
   slideTitle: {
-    fontSize: Math.min(width * 0.07, 28),
-    fontWeight: '800',
+    fontSize: Math.min(width * 0.08, 32),
+    fontWeight: '900',
     color: '#fff',
     textAlign: 'center',
-    marginBottom: height * 0.01,
+    marginBottom: height * 0.015,
+    textShadowColor: 'rgba(0, 0, 0, 0.5)',
+    textShadowOffset: { width: 2, height: 2 },
+    textShadowRadius: 6,
+    letterSpacing: 1,
+  },
+  slideSubtitle: {
+    fontSize: Math.min(width * 0.048, 19),
+    fontWeight: '700',
+    color: '#fff',
+    textAlign: 'center',
+    marginBottom: height * 0.015,
+    opacity: 0.95,
     textShadowColor: 'rgba(0, 0, 0, 0.3)',
     textShadowOffset: { width: 1, height: 1 },
     textShadowRadius: 3,
   },
-  slideSubtitle: {
-    fontSize: Math.min(width * 0.045, 18),
-    fontWeight: '600',
-    color: '#fff',
-    textAlign: 'center',
-    marginBottom: height * 0.01,
-    opacity: 0.9,
-  },
   slideDescription: {
-    fontSize: Math.min(width * 0.035, 14),
+    fontSize: Math.min(width * 0.038, 15),
     color: '#fff',
     textAlign: 'center',
-    lineHeight: Math.min(width * 0.05, 20),
-    paddingHorizontal: width * 0.08,
-    opacity: 0.8,
+    lineHeight: Math.min(width * 0.055, 22),
+    paddingHorizontal: width * 0.06,
+    opacity: 0.85,
+    fontWeight: '500',
   },
   indicatorContainer: {
     flexDirection: 'row',
@@ -267,51 +285,57 @@ const styles = StyleSheet.create({
     paddingTop: height * 0.02,
   },
   indicator: {
-    width: 10,
-    height: 10,
-    borderRadius: 5,
-    backgroundColor: 'rgba(255, 255, 255, 0.4)',
-    marginHorizontal: 6,
+    width: 12,
+    height: 12,
+    borderRadius: 6,
+    backgroundColor: 'rgba(255, 255, 255, 0.5)',
+    marginHorizontal: 8,
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.2,
-    shadowRadius: 4,
-    elevation: 3,
+    shadowOffset: { width: 0, height: 3 },
+    shadowOpacity: 0.3,
+    shadowRadius: 5,
+    elevation: 4,
+    borderWidth: 1.5,
+    borderColor: 'rgba(255, 255, 255, 0.3)',
   },
   activeIndicator: {
     backgroundColor: '#fff',
-    width: 24,
-    shadowOpacity: 0.4,
+    width: 32,
+    shadowOpacity: 0.5,
+    shadowRadius: 8,
+    borderColor: '#fff',
   },
   buttonSection: {
     alignItems: 'center',
-    flex: 0.2,
-    justifyContent: 'flex-end',
-    paddingBottom: height * 0.02,
+    position: 'absolute',
+    bottom: height * 0.05,
+    left: 0,
+    right: 0,
+    paddingHorizontal: width * 0.06,
   },
   getStartedButton: {
     width: width * 0.85,
-    borderRadius: 30,
+    borderRadius: 35,
     marginBottom: height * 0.02,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 6 },
-    shadowOpacity: 0.4,
-    shadowRadius: 12,
-    elevation: 10,
+    shadowColor: '#fff',
+    shadowOffset: { width: 0, height: 8 },
+    shadowOpacity: 0.5,
+    shadowRadius: 15,
+    elevation: 12,
   },
   buttonGradient: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    paddingVertical: height * 0.022,
-    borderRadius: 30,
+    paddingVertical: height * 0.025,
+    borderRadius: 35,
   },
   buttonText: {
-    fontSize: Math.min(width * 0.048, 19),
-    fontWeight: '800',
+    fontSize: Math.min(width * 0.052, 21),
+    fontWeight: '900',
     color: '#8B1538',
-    marginRight: 10,
-    letterSpacing: 0.5,
+    marginRight: 12,
+    letterSpacing: 1,
   },
   skipButton: {
     paddingVertical: height * 0.015,
