@@ -30,13 +30,13 @@ export default function HomeScreen({ navigation }) {
           contentContainerStyle={styles.grid}
           showsVerticalScrollIndicator={false}
         >
-          <Tile icon="play-circle" label="Media Centre" color="#8B1538" onPress={() => navigation.navigate('MediaCentre')} />
-          <Tile icon="book" label="E - Library" color="#8B1538" onPress={() => navigation.navigate('E-Library')} />
+          <Tile icon="play-circle" label="Media" color="#8B1538" onPress={() => navigation.navigate('MediaCentre')} />
+          <Tile icon="book" label="Library" color="#8B1538" onPress={() => navigation.navigate('E-Library')} />
           <Tile icon="chat" label="AFMA Chat" color="#8B1538" onPress={() => navigation.navigate('Chat')} />
           <Tile icon="forum" label="Forums" color="#8B1538" onPress={() => navigation.navigate('Forums')} />
           <Tile icon="map-marker-radius" label="Branch Locator" color="#8B1538" onPress={() => navigation.navigate('BranchLocator')} />
-          <Tile icon="account-tie" label="Overseer E - Office" color="#8B1538" onPress={() => navigation.navigate('OverseerQueue')} />
-          <Tile icon="account" label="Pastor's E - Office" color="#8B1538" onPress={() => navigation.navigate('PastorQueue')} />
+          <Tile icon="account-tie" label="Overseer Office" color="#8B1538" onPress={() => navigation.navigate('OverseerQueue')} />
+          <Tile icon="account" label="Pastor Office" color="#8B1538" onPress={() => navigation.navigate('PastorQueue')} />
           <Tile icon="calendar" label="Events Calendar" color="#8B1538" onPress={() => navigation.navigate('Events')} />
           <Tile icon="shield-account" label="Admin" color="#8B1538" onPress={handleAdminAccess} />
         </ScrollView>
